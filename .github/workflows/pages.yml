@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Rebuild v1.1.0 site package
+      - name: Rebuild and brand v1.1.1 site package
         shell: bash
         run: |
           set -euo pipefail
@@ -38,9 +38,28 @@ jobs:
           release_dir="$(find .release-build/unpacked -mindepth 1 -maxdepth 1 -type d | head -n 1)"
           test -n "$release_dir"
           cp -a "$release_dir"/. _site/
+          cp README.md CHANGELOG.md TEST_REPORT.md firebase-backend.js _site/
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('_site/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('F1–F2 Classroom v1.1.0','F1–F2 Classroom v1.1.1')
+          s=s.replace('B-1 v1.1.0','B-1 v1.1.1')
+          if 'esaKITs — F1–F2 Classroom' not in s:
+              comment='''<!doctype html>\n<!--\n  esaKITs — F1–F2 Classroom\n  Copyright 2026 Tetsuya Esaki / esaKITs — Enhanced Smart AI Kits\n\n  Licensed under the Apache License, Version 2.0 (the "License");\n  you may not use this file except in compliance with the License.\n  You may obtain a copy of the License at\n\n      https://www.apache.org/licenses/LICENSE-2.0\n\n  Unless required by applicable law or agreed to in writing, software\n  distributed under the License is distributed on an "AS IS" BASIS,\n  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n  See the License for the specific language governing permissions and\n  limitations under the License.\n\n  If you modify and redistribute this file, retain the applicable copyright,\n  license, and attribution notices and add a prominent notice that you changed\n  this file, as required by Apache License 2.0.\n-->\n'''
+              s=s.replace('<!doctype html>\n',comment,1)
+          s=s.replace('.sub{color:#cbd5e1;font-size:12px}.spacer{flex:1}', '.sub{color:#cbd5e1;font-size:12px}.esakits-brand{color:#93c5fd;font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap}.spacer{flex:1}',1)
+          old='<h1>F1–F2 Classroom</h1><span class="tag">B-1 v1.1.1</span><span class="sub">母音空間をクラスで共有</span><span class="spacer"></span>'
+          new='<h1>F1–F2 Classroom</h1><span class="tag">B-1 v1.1.1</span><span class="sub">母音空間をクラスで共有</span><span class="esakits-brand">esaKITs — Enhanced Smart AI Kits</span><span class="spacer"></span>'
+          if old not in s:
+              raise SystemExit('header marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
           touch _site/.nojekyll
           test -f _site/index.html
-          grep -q 'B-1 v1.1.0' _site/index.html
+          grep -q 'B-1 v1.1.1' _site/index.html
+          grep -q 'esaKITs — Enhanced Smart AI Kits' _site/index.html
           grep -q '多角形比較' _site/README.md
       - name: Publish site source to gh-pages branch
         shell: bash
@@ -54,6 +73,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Publish F1-F2 Classroom v1.1.0"
+          git commit -m "Publish F1-F2 Classroom v1.1.1"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin gh-pages
