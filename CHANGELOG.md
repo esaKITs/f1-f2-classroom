@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1 — 2026-08-26
+- ヘッダーに `esaKITs — Enhanced Smart AI Kits` のブランド表記を追加。
+- ソース冒頭に `Copyright 2026 Tetsuya Esaki / esaKITs` と Apache License 2.0 の標準帰属表記を追加。
+- v1.1.0 の多角形比較・SVG保存などの機能仕様は変更なし。
+
 ## v1.1.0 — 2026-08-26
 
 - 多角形比較モードを追加
