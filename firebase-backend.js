@@ -1,8 +1,13 @@
+/*
+ * esaKITs — F1–F2 Classroom backend
+ * Copyright 2026 Tetsuya Esaki / esaKITs — Enhanced Smart AI Kits
+ * Licensed under the Apache License, Version 2.0.
+ */
 (function(global){
   'use strict';
 
   const CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const VERSION='1.0.0';
+  const VERSION='1.1.1';
   let readyPromise=null;
 
   function cfg(){ return global.B1_FIREBASE_CONFIG || null; }
