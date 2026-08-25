@@ -1,31 +1,39 @@
-# F1–F2 Classroom v1.0.0 公開版テスト結果
+# F1–F2 Classroom v1.1.0 テスト報告
 
 実施日: 2026-08-26
 
-## 公開判定: PASS（アプリ本体）
+## 静的検査
+- PASS: JavaScript 構文チェック（Node.js）
+- PASS: HTML ID 重複なし
+- PASS: JavaScript のリテラル ID 参照欠落なし
+- PASS: 旧 connectLineWidth 参照なし
 
-### 静的・構文
-- JavaScript 構文: PASS
-- GAS 関連参照 (`google.script.run`, `SpreadsheetApp`, `HtmlService`, `PropertiesService`, `Code.gs`): 0件
-- 公開入口が小文字 `index.html`: PASS
-- 画面・バックエンドの版表示 v1.0.0: PASS
+## Chromium 操作テスト
+- PASS: 教師画面・デモ40点の初期描画
+- PASS: 男性平均 vs 女性平均を各5頂点で比較
+- PASS: 3頂点以上でA/Bとも閉じた多角形
+- PASS: 2頂点では閉じず1本の線
+- PASS: A/Bの独立色設定
+- PASS: 実線／破線のSVG反映
+- PASS: 線幅のSVG反映
+- PASS: 塗り透明度（12%）のSVG反映
+- PASS: 対応する5母音の頂点対応線
+- PASS: クラス全体平均 vs 参照データ平均
+- PASS: 強調IDを比較対象として5母音取得
+- PASS: 「表示中の平均」が性別フィルターを反映し、「クラス全体平均」と独立
+- PASS: 平均点の任意塗り色
+- PASS: 平均点輪郭線 OFF
+- PASS: 平均点輪郭線の任意色・太さ
+- PASS: 通常の平均結線を閉じた多角形として描画
+- PASS: 通常の平均結線の色・破線・4px設定
+- PASS: 旧設定から多角形スタイル既定値を安全に補完
+- PASS: 操作中 JavaScript runtime error 0件
 
-### 既存のブラウザ / UI テスト
-- 教師画面表示、母音設定、カスタム母音、独自セット: PASS
-- 平均、楕円、値ラベル、接続線、参照データ矢印: PASS
-- PNG / CSV / Excel 書き出し経路: PASS
-- SVG XML妥当性、ベクター要素、transform復元: PASS
-- 操作時 JavaScript runtime error: 0件
+## SVG実保存テスト
+- PASS: 「SVG保存」ボタンを実際に押してファイルをダウンロード
+- PASS: 生成SVGがXML/SVGとして完結
+- PASS: 多角形比較A/Bの凡例を含む
+- PASS: 多角形・塗り・線種・対応線をベクター要素として保持
 
-### 同期層の模擬テスト
-- セッション作成 → 学生送信 → 教師取得: PASS
-- 学生から他参加者IDを非表示: PASS
-- 同一学生の再入力は最新版を採用: PASS
-- 設定更新、教師再開、セッション終了: PASS
-- 1 / 5 / 10 / 40 / 100人 × 5母音: PASS
-
-## 実サービス側で残る確認
-
-Firebase 本番プロジェクトの設定値はこの公開ソースには含めていません。そのため、公開サイトでの複数端末リアルタイム同期は、本番 Firebase プロジェクトへ Security Rules と Web 設定を適用後に2端末で最終確認します。
-
-これはアプリ本体の既知不具合ではなく、外部サービスの本番設定・接続確認です。
+## 制約
+このテストでは外部 CDN と Firebase 実通信を切り離したプレビューモードを使用しました。多角形比較は描画・設定・SVG出力までブラウザ実操作で確認済みです。Firebase 実ネットワーク同期部分は v1.0.0 系の通信層から変更していません。
