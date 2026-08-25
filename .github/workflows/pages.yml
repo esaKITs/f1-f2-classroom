@@ -22,10 +22,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Rebuild v1.1.0 site package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site .release-build
+          mkdir -p _site .release-build/unpacked
+          cat \
+            .release/site.b64.aa \
+            .release/site.b64.ab \
+            .release/site.b64.ac \
+            .release/site.b64.ac.1 \
+            .release/site.b64.ac.2 \
+            .release/site.b64.ad.aa \
+            .release/site.b64.ad.ab \
+            .release/site.b64.ad.ac > .release-build/site.b64
+          cat .release/rem2.aa .release/rem2.ab .release/rem2.ac | base64 -d >> .release-build/site.b64
+          base64 -d .release-build/site.b64 > .release-build/site.zip
+          unzip -q .release-build/site.zip -d .release-build/unpacked
+          release_dir="$(find .release-build/unpacked -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          test -n "$release_dir"
+          cp -a "$release_dir"/. _site/
+          touch _site/.nojekyll
+          test -f _site/index.html
+          grep -q 'B-1 v1.1.0' _site/index.html
+          grep -q '多角形比較' _site/README.md
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
