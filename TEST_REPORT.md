@@ -1,4 +1,4 @@
-# F1–F2 Classroom v1.1.0 テスト報告
+# F1–F2 Classroom v1.1.1 テスト報告
 
 実施日: 2026-08-26
 
@@ -37,3 +37,10 @@
 
 ## 制約
 このテストでは外部 CDN と Firebase 実通信を切り離したプレビューモードを使用しました。多角形比較は描画・設定・SVG出力までブラウザ実操作で確認済みです。Firebase 実ネットワーク同期部分は v1.0.0 系の通信層から変更していません。
+
+## esaKITs ブランド回帰（v1.1.1）
+- PASS: 画面ヘッダーに `esaKITs — Enhanced Smart AI Kits` を表示。
+- PASS: ソース冒頭に esaKITs / Tetsuya Esaki の著作権・Apache License 2.0 帰属表記。
+- PASS: 1600px・1024px幅でブランド表示とヘッダー主要操作が同じヘッダー内に収まることをChromiumで確認。
+- PASS: ブランド追加後もヘッダー主要操作（参加者数・同期状態・更新）がDOM上で維持。
+- PASS: v1.1.0 の多角形比較UI・SVG保存UIを維持。
