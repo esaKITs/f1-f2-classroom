@@ -6,7 +6,7 @@
 window.B1_FIREBASE_CONFIG = window.B1_FIREBASE_CONFIG || {
   apiKey: "AIzaSyCYz3MmK5CjS6UnqOzC3wmp2-bzI6F_P6I",
   authDomain: "esakits-f1-f2-classroom.firebaseapp.com",
-  databaseURL: "",
+  databaseURL: "https://esakits-f1-f2-classroom-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "esakits-f1-f2-classroom",
   storageBucket: "esakits-f1-f2-classroom.firebasestorage.app",
   messagingSenderId: "4707652667",
