@@ -1,0 +1,117 @@
+name: Firebase security rules smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - firebase-config.js
+      - firebase-database.rules.json
+      - .github/workflows/firebase-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firebase-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test anonymous auth and Realtime Database rules
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, re, secrets, string, urllib.error, urllib.parse, urllib.request
+          from pathlib import Path
+
+          cfg = Path('firebase-config.js').read_text(encoding='utf-8')
+          def val(name):
+              m = re.search(rf'{re.escape(name)}:\s*"([^"]*)"', cfg)
+              if not m or not m.group(1):
+                  raise SystemExit(f'Missing {name} in firebase-config.js')
+              return m.group(1)
+
+          api_key = val('apiKey')
+          db_url = val('databaseURL').rstrip('/')
+
+          def http(method, url, payload=None, expected=(200,)):
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(url, data=data, method=method)
+              if data is not None:
+                  req.add_header('Content-Type', 'application/json')
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      body = r.read().decode('utf-8')
+                      status = r.status
+              except urllib.error.HTTPError as e:
+                  status = e.code
+                  body = e.read().decode('utf-8')
+              if status not in expected:
+                  raise AssertionError(f'{method} {url.split("?")[0]} -> {status}: {body[:300]}')
+              return status, json.loads(body) if body else None
+
+          def signup():
+              _, body = http(
+                  'POST',
+                  f'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={urllib.parse.quote(api_key)}',
+                  {'returnSecureToken': True},
+                  (200,)
+              )
+              return body['localId'], body['idToken']
+
+          def db(method, path, token=None, payload=None, expected=(200,)):
+              q = '' if token is None else '?auth=' + urllib.parse.quote(token)
+              return http(method, f'{db_url}/{path}.json{q}', payload, expected)
+
+          teacher_uid, teacher_token = signup()
+          student_uid, student_token = signup()
+          sid = 'SMOKE' + ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(7))
+          session = {
+              'meta': {'sessionId': sid, 'sessionName': 'CI smoke test', 'active': True, 'version': '1.1.1'},
+              'settings': {'mode': 'smoke'},
+              'private': {'ownerUid': teacher_uid, 'recoveryKey': 'SMOKEKEY1234'},
+              'publicPoints': {},
+              'privateRoster': {},
+              'claims': {}
+          }
+
+          try:
+              db('PUT', f'sessions/{sid}', teacher_token, session, (200,))
+              print('PASS teacher can create session')
+
+              db('GET', f'sessions/{sid}/meta', None, None, (401, 403))
+              print('PASS unauthenticated read is blocked')
+
+              db('GET', f'sessions/{sid}/meta', student_token, None, (200,))
+              print('PASS authenticated student can read public session metadata')
+
+              point = {'vowel': 'a', 'f1': 700, 'f2': 1200, 'updatedAt': 'smoke'}
+              db('PUT', f'sessions/{sid}/publicPoints/{student_uid}', student_token, point, (200,))
+              print('PASS student can write own public point')
+
+              roster = {'studentId': 'SMOKE01', 'name': 'Smoke Student'}
+              db('PUT', f'sessions/{sid}/privateRoster/{student_uid}', student_token, roster, (200,))
+              print('PASS student can write own private roster record')
+
+              db('GET', f'sessions/{sid}/privateRoster', student_token, None, (401, 403))
+              print('PASS student cannot read private roster')
+
+              _, teacher_roster = db('GET', f'sessions/{sid}/privateRoster', teacher_token, None, (200,))
+              assert student_uid in teacher_roster
+              print('PASS teacher can read private roster')
+
+              other_uid = teacher_uid
+              db('PUT', f'sessions/{sid}/publicPoints/{other_uid}', student_token, point, (401, 403))
+              print('PASS student cannot overwrite another user point')
+
+              db('PUT', f'sessions/{sid}/privateRoster/{other_uid}', student_token, roster, (401, 403))
+              print('PASS student cannot overwrite another roster record')
+          finally:
+              try:
+                  db('DELETE', f'sessions/{sid}', teacher_token, None, (200,))
+                  print('PASS smoke-test session removed')
+              except Exception as e:
+                  print('WARNING cleanup failed:', e)
+
+          print('ALL FIREBASE SMOKE TESTS PASSED')
+          PY
