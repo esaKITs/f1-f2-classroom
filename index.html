@@ -1,0 +1,925 @@
+<!doctype html>
+<!--
+  esaKITs — F1–F2 Classroom
+  Copyright 2026 Tetsuya Esaki / esaKITs — Enhanced Smart AI Kits
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  If you modify and redistribute this file, retain the applicable copyright,
+  license, and attribution notices and add a prominent notice that you changed
+  this file, as required by Apache License 2.0.
+-->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>F1–F2 Classroom v1.1.1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-backend.js"></script>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#d9e1ea;--accent:#2563eb;--accent-soft:#eaf2ff;--ok:#137333;--warn:#a15c00;--danger:#b42318;--shadow:0 1px 4px rgba(16,24,40,.05)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",Meiryo,sans-serif}button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+header{position:sticky;top:0;z-index:10;background:#0d1b34;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px #0002}header h1{font-size:19px;margin:0}.tag{background:#2f7df6;border-radius:7px;padding:3px 8px;font-weight:700}.sub{color:#cbd5e1;font-size:12px}.esakits-brand{color:#93c5fd;font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap}.spacer{flex:1}.topstat{font-weight:700}.syncstat{font-size:11px;font-weight:700;color:#d0d5dd;border:1px solid #344054;border-radius:999px;padding:3px 8px;white-space:nowrap}.syncstat.ok{color:#bbf7d0;border-color:#166534}.syncstat.warn{color:#fed7aa;border-color:#9a3412}.syncstat.error{color:#fecaca;border-color:#991b1b}
+main{max-width:1680px;margin:auto;padding:14px}.teacher-view{display:grid;gap:14px}.teacher-setup{display:grid;grid-template-columns:minmax(330px,.9fr) minmax(560px,1.7fr);gap:14px;align-items:start}.teacher-workspace{--rail-width:400px;display:grid;grid-template-columns:minmax(0,1fr) 8px var(--rail-width);gap:10px;align-items:start}.teacher-primary{min-width:0}.control-rail{min-width:0}.workspace-resizer{width:8px;align-self:stretch;min-height:640px;cursor:col-resize;border-radius:6px;background:linear-gradient(to right,transparent 2px,#d0d5dd 2px,#d0d5dd 5px,transparent 5px)}.workspace-resizer:hover,.workspace-resizer.dragging{background:linear-gradient(to right,transparent 1px,#98a2b3 1px,#98a2b3 6px,transparent 6px)}.student-layout{display:grid;grid-template-columns:360px minmax(620px,1fr) 290px;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}.card h2{font-size:14px;margin:0;padding:11px 13px;border-bottom:1px solid var(--line);background:#f8fafc}.body{padding:12px}.stack{display:grid;gap:9px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.label{font-size:12px;font-weight:700;color:#344054}.muted{font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
+input[type=text],input[type=number],select{width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:8px 9px;color:var(--ink)}input[type=color]{width:42px;height:30px;border:1px solid #cbd5e1;border-radius:6px;padding:2px;background:#fff}.check{display:flex;align-items:center;gap:6px}.check input{width:auto}
+.btn,button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);padding:8px 11px;font-weight:700}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.danger{background:#fff;color:var(--danger);border-color:#f1b7b0}.soft{background:var(--accent-soft);color:#174ea6;border-color:#c7d7fe}.small{padding:6px 9px;font-size:12px}.full{width:100%}.btn:disabled,button:disabled{opacity:.5;cursor:not-allowed}
+.notice{border-radius:9px;padding:9px 10px;font-size:12px}.info{background:#eff6ff;border:1px solid #bfdbfe}.success{background:#f0fdf4;border:1px solid #bbf7d0;color:var(--ok)}.warning{background:#fff7ed;border:1px solid #fed7aa;color:#7c3f00}.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.preset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.preset{padding:10px 8px;text-align:center}.preset.active{background:var(--accent-soft);border-color:#9dbcfb;color:#174ea6}.section-title{font-weight:800;font-size:12px;margin-top:3px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{display:flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:#fff}.chip input{width:auto;margin:0}.lang-ja{color:#174ea6}.lang-en{color:#9f1239}.badge-ja,.badge-en{display:inline-block;font-size:10px;border-radius:5px;padding:1px 5px;font-weight:800}.badge-ja{background:#eaf2ff;color:#174ea6}.badge-en{background:#fff1f2;color:#9f1239}
+.settings-table{width:100%;border-collapse:collapse;font-size:12px}.settings-table th,.settings-table td{padding:6px;border-bottom:1px solid #edf1f5;text-align:left}.settings-table th{color:#667085;font-weight:700}.settings-table select{padding:5px 6px}.settings-table input[type=color]{vertical-align:middle}
+.urlbox{word-break:break-all;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px}.code{font:800 22px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:2px;color:#1d4ed8}.qr{width:150px;height:150px;margin:4px auto;display:grid;place-items:center}.qr img,.qr canvas{max-width:100%!important;height:auto!important}
+ .chart-shell{height:650px;background:#fff;border-radius:10px;position:relative;overflow:hidden}.chart-resizer{height:10px;margin-top:5px;cursor:row-resize;border-radius:6px;background:linear-gradient(to bottom,transparent 2px,#d0d5dd 2px,#d0d5dd 5px,transparent 5px)}.chart-resizer:hover,.chart-resizer.dragging{background:linear-gradient(to bottom,transparent 1px,#98a2b3 1px,#98a2b3 6px,transparent 6px)}.chart-shell canvas{width:100%;height:100%;display:block}.chart-shell:fullscreen{height:100vh;border-radius:0;background:#fff}.chart-shell:fullscreen canvas{width:100%;height:100%}.fullscreen-exit{position:absolute;right:12px;top:12px;z-index:3;display:none;background:#fff;border-color:#cbd5e1}.chart-shell:fullscreen .fullscreen-exit{display:block}.legend{display:flex;gap:10px 16px;flex-wrap:wrap;margin:8px 0 0;font-size:12px}.legend-item{display:flex;align-items:center;gap:5px}.legend-symbol{width:11px;height:11px;display:inline-block}.round{border-radius:50%}.square{border-radius:1px}.star-symbol{font-size:17px;line-height:1}
+.display-grid{display:grid;grid-template-columns:1fr;gap:11px}.display-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.display-checks{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}.display-grid .label{margin-bottom:5px}.advanced-settings{border-top:1px solid #edf1f5;padding-top:4px}.advanced-settings summary{cursor:pointer;font-weight:800;color:#344054;padding:5px 0}.advanced-settings[open] summary{margin-bottom:8px}.rail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.teacher-setup .card,.teacher-workspace .card{margin-bottom:0}.teacher-primary{display:grid;gap:14px}.teacher-primary .chart-card{position:sticky;top:10px;z-index:2}.control-rail{display:grid;gap:14px}.session-inline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}.mode-note{margin-top:1px}.compact-section{display:grid;gap:8px}.chart-card .body{padding:10px 12px 12px}.chart-card h2{display:flex;align-items:center;gap:8px}.chart-card h2 .chart-sub{font-weight:500;color:var(--muted);font-size:11px}.summary{display:grid;grid-template-columns:1fr 220px;gap:12px}.toolbar{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px}.toolgroup{padding-right:10px;border-right:1px solid var(--line)}.toolgroup:last-child{border-right:0}.toolgroup .label{margin-bottom:5px}.summary{display:grid;grid-template-columns:1fr 230px;gap:12px}.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{border:1px solid var(--line);padding:6px;text-align:center}.table th{background:#f8fafc} .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:7px 8px;min-width:0}.kpi b{display:block;font-size:17px;line-height:1.2}.status-panel{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px;cursor:pointer;transition:.15s}.status-panel:hover{border-color:#9dbcfb;background:#fbfdff}.status-panel:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.status-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.status-title .hint{font-size:11px;color:var(--muted)}
+dialog.input-status-dialog{width:min(920px,calc(100vw - 32px));max-height:82vh;border:0;border-radius:14px;padding:0;box-shadow:0 18px 60px #0004;color:var(--ink)}dialog.input-status-dialog::backdrop{background:#0f172a66}.dialog-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:#f8fafc}.dialog-head h2{margin:0;font-size:16px}.dialog-body{padding:12px 16px 16px;overflow:auto;max-height:calc(82vh - 58px)}.status-table{width:100%;border-collapse:collapse;font-size:12px}.status-table th,.status-table td{padding:8px 7px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top}.status-table th{position:sticky;top:0;background:#fff;z-index:1;color:#475467}.completion{display:inline-block;border-radius:999px;padding:2px 7px;font-weight:800;font-size:11px}.completion.done{background:#ecfdf3;color:#067647}.completion.pending{background:#fff7ed;color:#9a3412}.chart-heading-actions{margin-left:auto;display:flex;gap:6px}.chart-title-help{font-size:11px;color:var(--muted)}
+.vowel-inputs{display:grid;grid-template-columns:74px 1fr 1fr;gap:6px;align-items:center}.vowel-inputs .head{font-weight:800;text-align:center;font-size:12px}.vowel-name{text-align:center;font:700 16px Georgia,serif}.vowel-inputs input{text-align:center}.divider{height:1px;background:#edf1f5;margin:4px 0}.export-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ref-drop{border:2px dashed #cbd5e1;border-radius:10px;padding:12px;text-align:center;background:#f8fafc}.swatch{width:11px;height:11px;border-radius:50%;display:inline-block}.shape-dot,.shape-square,.shape-diamond,.shape-triangle{display:inline-block;width:10px;height:10px;background:#475467}.shape-dot{border-radius:50%}.shape-square{}.shape-diamond{transform:rotate(45deg)}.shape-triangle{width:0;height:0;background:none;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid #475467}
+/* v0.3.3.1: 設定中もグラフを見失わない */
+@media(min-width:901px){
+  .teacher-workspace{min-height:calc(100vh - 92px)}
+  .teacher-primary .chart-card{position:sticky;top:68px;z-index:2}
+  .control-rail{position:sticky;top:68px;max-height:calc(100vh - 82px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-gutter:stable}
+}
+@media(max-width:1220px){.teacher-setup{grid-template-columns:1fr}.teacher-workspace{grid-template-columns:minmax(0,1fr) 330px}.student-layout{grid-template-columns:300px 1fr}.student-layout .rightcol{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.student-layout .rightcol .card{margin:0}.chart-shell{height:590px}.preset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.teacher-primary .chart-card{position:static}.teacher-workspace,.student-layout{grid-template-columns:1fr}.control-rail{grid-template-columns:1fr}.student-layout .rightcol{display:block}.student-layout .rightcol .card{margin-bottom:14px}.chart-shell{height:540px}.summary{grid-template-columns:1fr}.preset-grid{grid-template-columns:1fr 1fr}.display-pair{grid-template-columns:1fr}}
+
+.resume-box{border:1px dashed #cbd5e1;border-radius:9px;padding:9px;background:#f8fafc}.resume-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.recovery-key{font:800 15px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em}.detail-values{margin-top:6px;border:1px solid #e5e7eb;border-radius:8px;background:#fbfdff;padding:7px}.detail-values table{width:100%;border-collapse:collapse;font-size:11px}.detail-values th,.detail-values td{padding:4px 6px;border-bottom:1px solid #eef2f6;text-align:right}.detail-values th:first-child,.detail-values td:first-child{text-align:left}.status-detail-btn{padding:4px 7px;font-size:11px}.status-table tr.detail-row td{padding:0 7px 8px;background:#fbfdff}
+
+.modal-overlay{position:fixed;inset:0;z-index:2147483600;background:#0f172a66;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.hidden{display:none!important}
+.modal-card{width:min(920px,calc(100vw - 32px));max-height:82vh;background:#fff;border-radius:14px;box-shadow:0 18px 60px #0004;overflow:hidden;color:var(--ink)}
+.modal-card .dialog-body{max-height:calc(82vh - 58px);overflow:auto}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.help-circle{width:22px;height:22px;border-radius:50%;border:1px solid #98a2b3;background:#fff;padding:0;font-weight:800;line-height:20px;cursor:pointer;color:#344054}
+.help-circle:hover{background:#f2f4f7}
+.help-popup{position:fixed;left:50%;top:70px;transform:translateX(-50%);width:min(520px,calc(100vw - 32px));z-index:2147483000;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 60px #0005;padding:16px;font-size:13px;line-height:1.55}
+.help-popup.hidden{display:none!important}.help-popup p{margin:10px 0}.help-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+@media(max-width:900px){.ellipse-style-row{grid-template-columns:1fr 1fr}.help-popup{top:54px}}
+
+.point-tooltip{position:fixed;z-index:32000;pointer-events:none;background:rgba(17,24,39,.96);color:#fff;border-radius:8px;padding:7px 9px;font-size:12px;line-height:1.35;box-shadow:0 6px 20px #0003;white-space:nowrap}
+.point-tooltip.hidden{display:none!important}
+
+@media(max-width:980px){
+  .teacher-workspace{grid-template-columns:1fr;--rail-width:auto}
+  .workspace-resizer{display:none}
+}
+
+.shape-select{width:58px!important;min-width:58px;padding:6px 7px!important;text-align:center;font-size:18px;line-height:1}
+.settings-table th:nth-child(2),.settings-table td:nth-child(2){width:66px;white-space:nowrap}
+.settings-table th:nth-child(3),.settings-table td:nth-child(3){width:60px;white-space:nowrap}
+.ellipse-style-grid{display:grid;gap:10px}
+.ellipse-style-card{border:1px solid #e4e7ec;border-radius:9px;padding:9px;background:#fbfcfe;display:grid;gap:8px}
+.ellipse-style-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.line-preview{display:block;flex:1;max-width:140px;height:0;border-top:2px solid #475467}
+.line-preview.dashed{border-top-style:dashed}.line-preview.dotted{border-top-style:dotted}
+.ellipse-style-controls{display:grid;grid-template-columns:minmax(120px,1fr) 44px minmax(92px,.8fr);gap:7px;align-items:end}
+.ellipse-style-controls label{display:grid;gap:4px;font-size:11px;color:#667085}
+.ellipse-style-controls input[type=color]{width:40px;height:32px}
+.ellipse-width-row{display:grid;grid-template-columns:auto minmax(100px,1fr) 48px;gap:8px;align-items:center}
+.ellipse-width-row input[type=range]{width:100%;padding:0;border:0}
+.ellipse-width-row output{font-size:12px;font-weight:700;text-align:right;color:#344054}
+@media(max-width:900px){.ellipse-style-controls{grid-template-columns:1fr 44px}.ellipse-style-controls label:last-child{grid-column:1/-1}.ellipse-width-row{grid-template-columns:auto 1fr 48px}}
+
+.visual-tuning-grid{display:grid;gap:8px}.visual-tuning-grid label{display:grid;grid-template-columns:120px minmax(90px,1fr) 48px;gap:8px;align-items:center;font-size:12px}.visual-tuning-grid input[type=range]{width:100%;padding:0;border:0}.visual-tuning-grid output{text-align:right;font-weight:700;color:#344054}.ellipse-style-grid{display:grid;gap:10px}.ellipse-style-card{border:1px solid #e4e7ec;border-radius:9px;padding:9px;background:#fbfcfe;display:grid;gap:8px}.ellipse-style-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.line-preview{display:block;flex:1;max-width:140px;height:0;border-top:2px solid #475467}.line-preview.dashed{border-top-style:dashed}.line-preview.dotted{border-top-style:dotted}.ellipse-style-controls{display:grid;grid-template-columns:minmax(120px,1fr) 44px minmax(92px,.8fr);gap:7px;align-items:end}.ellipse-style-controls label{display:grid;gap:4px;font-size:11px;color:#667085}.ellipse-style-controls input[type=color]{width:40px;height:32px}.ellipse-width-row{display:grid;grid-template-columns:auto minmax(100px,1fr) 48px;gap:8px;align-items:center}.ellipse-width-row input[type=range]{width:100%;padding:0;border:0}.ellipse-width-row output{font-size:12px;font-weight:700;text-align:right;color:#344054}
+
+.phoneme-legend-badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 7px;border-radius:999px;color:#fff;font-weight:700;line-height:1;border:1px solid rgba(255,255,255,.95);box-shadow:0 1px 3px rgba(15,23,42,.16)}
+.legend-lang{font-size:11px;color:#667085;font-weight:500}
+
+.grid-tick-settings{display:grid;gap:9px}.grid-tick-row{display:grid;grid-template-columns:72px minmax(72px,.7fr) minmax(125px,1.2fr) minmax(125px,1.2fr);gap:8px;align-items:end;border:1px solid #e4e7ec;border-radius:9px;padding:9px;background:#fbfcfe}.grid-tick-row>b{align-self:center;font-size:12px}.grid-tick-row label{display:grid;gap:4px;font-size:11px;color:#667085}.grid-tick-row input[type=color]{width:42px;height:32px}.grid-tick-row input[type=range]{width:100%;padding:0;border:0}.grid-tick-row output{font-size:12px;font-weight:700;text-align:right;color:#344054}.grid-step-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid-step-row label{display:grid;grid-template-columns:70px 1fr 24px;gap:6px;align-items:center;font-size:12px}.grid-step-row input{min-width:0}@media(max-width:900px){.grid-tick-row{grid-template-columns:1fr 1fr}.grid-tick-row>b{grid-column:1/-1}.grid-step-row{grid-template-columns:1fr}}
+
+.value-label-controls,.connection-controls,.export-controls,.custom-vowel-grid,.set-manager{display:grid;gap:8px}.compact-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.compact-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.custom-vowel-grid{grid-template-columns:1fr 1fr}.custom-vowel-list{display:grid;gap:6px}.custom-vowel-item{display:grid;grid-template-columns:auto 1fr auto;gap:7px;align-items:center;padding:6px 7px;border:1px solid #e4e7ec;border-radius:8px;background:#fbfcfe}.custom-vowel-item .meta{min-width:0}.custom-vowel-item .example{font-size:11px;color:#667085;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.equation-list{display:grid;gap:10px}.equation-card{border:1px solid #e4e7ec;border-radius:10px;padding:10px;background:#fbfcfe}.equation-formula{font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all;background:#fff;border:1px solid #eaecf0;border-radius:7px;padding:8px;margin-top:6px}.line-style-preview{height:0;border-top:2px solid #475467;margin-top:7px}.help-popup-wide{width:min(820px,calc(100vw - 28px));max-height:78vh;overflow:auto}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}.tiny-code{font:11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.saved-set-row{display:grid;grid-template-columns:1fr auto auto;gap:6px}.saved-set-row select{min-width:0}.export-note{font-size:11px;color:#667085}.arrow-key{display:inline-flex;align-items:center;gap:5px}.arrow-key::before{content:'→';font-weight:900}.custom-chip-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+@media(max-width:900px){.compact-grid-3,.custom-vowel-grid{grid-template-columns:1fr}.export-actions{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>F1–F2 Classroom</h1><span class="tag">B-1 v1.1.1</span><span class="sub">母音空間をクラスで共有</span><span class="esakits-brand">esaKITs — Enhanced Smart AI Kits</span><span class="spacer"></span><span id="topStat" class="topstat"></span><span id="syncStat" class="syncstat">未接続</span><button id="refreshBtn" class="small">更新</button>
+</header>
+<main>
+  <div id="demoBanner" class="notice warning hidden" style="margin-bottom:12px">プレビューモードです。Firebase設定が未設定、またはバックエンドに接続できないため、見た目と操作だけを試しています。公開版では教師・学生とも公開URLを開くだけで利用します。</div>
+
+  <div id="teacherView" class="teacher-view hidden">
+    <div class="teacher-setup">
+      <section class="card"><h2>セッション</h2><div class="body stack">
+        <div class="session-inline"><div><div class="label">授業・セッション名</div><input id="sessionName" type="text" placeholder="例：English Phonetics 8/18"></div><div class="row"><button id="createSessionBtn" class="primary">新しいセッション</button><button id="showResumeBtn">セッションを再開</button></div></div>
+        <div id="resumeBox" class="resume-box hidden">
+          <div class="resume-grid"><div><div class="label">セッションコード</div><input id="resumeSessionId" type="text" placeholder="例：A7K3..." autocomplete="off"></div><div><div class="label">再開用キー</div><input id="resumeRecoveryKey" type="text" placeholder="12文字" autocomplete="off"></div><button id="resumeSessionBtn" class="primary">再開する</button></div>
+          <div class="tiny" style="margin-top:6px">教師PCの電源を落としても、セッションコードと再開用キーがあれば同じ授業を復旧できます。</div>
+        </div>
+        <div id="sessionInfo" class="hidden stack">
+          <div class="row"><div><div class="label">セッションコード</div><div class="code" id="sessionCode"></div></div><div class="spacer"></div><button id="copyUrlBtn" class="small">URLをコピー</button><button id="openStudentBtn" class="small">学生画面を開く</button></div>
+          <div class="row"><div><div class="label">再開用キー</div><div class="code recovery-key" id="recoveryKey">—</div></div><div class="spacer"></div><button id="copyRecoveryBtn" class="small">再開情報をコピー</button></div>
+          <div class="notice warning" style="margin:0">PCを閉じる前に、セッションコードと再開用キーを控えてください。</div>
+          <div><div class="label">学生参加URL</div><div class="urlbox" id="studentUrl"></div></div>
+          <details><summary class="muted">QRコードも表示</summary><div id="qrcode" class="qr"></div></details>
+        </div>
+        <div id="teacherStatus"></div>
+      </div></section>
+
+      <section class="card"><h2>授業モード</h2><div class="body stack">
+        <div class="preset-grid">
+          <button class="preset active" data-preset="ja5">日本語5母音</button>
+          <button class="preset" data-preset="en-short">米国英語・短母音</button>
+          <button class="preset" data-preset="en-long">米国英語・長母音</button>
+          <button class="preset" data-preset="stats">統計比較</button>
+          <button class="preset" data-preset="custom">自由選択</button>
+        </div>
+        <div class="muted mode-note">標準モードを選ぶだけで授業を開始できます。母音・色・形を細かく変える場合だけ右側の「詳細設定」を開きます。</div>
+      </div></section>
+    </div>
+
+    <div class="teacher-workspace">
+      <section class="teacher-primary">
+        <section class="card chart-card"><h2>F1–F2 母音空間 <span class="chart-sub">F1：右側／F2：上側</span><span class="chart-heading-actions"><button id="fullscreenBtn" class="small">全画面</button></span></h2><div class="body">
+          <div class="chart-shell" id="teacherChartShell"><canvas id="teacherCanvas"></canvas><button id="fullscreenExitBtn" class="small fullscreen-exit">全画面を終了</button></div>
+          <div id="chartResizer" class="chart-resizer" role="separator" aria-orientation="horizontal" aria-label="グラフの高さを調整" title="ドラッグしてグラフの高さを変更"></div>
+          <div id="teacherPlotNote" class="tiny" style="margin-top:5px"></div>
+        </div></section>
+
+        <section class="card"><h2>集計</h2><div class="body">
+          <table class="table"><thead><tr><th>言語</th><th>母音</th><th>n</th><th>平均F1</th><th>平均F2</th></tr></thead><tbody id="summaryBody"></tbody></table>
+        </div></section>
+      </section>
+
+      <div id="workspaceResizer" class="workspace-resizer" role="separator" aria-orientation="vertical" aria-label="グラフと設定欄の幅を調整" title="ドラッグして右メニューの幅を変更"></div>
+
+      <aside class="control-rail">
+        <section class="status-panel" id="statusPanel" role="button" tabindex="0" aria-label="入力状況の詳細を表示">
+          <div class="status-title"><span class="label">入力状況</span><button id="statusDetailsBtn" class="small" type="button">詳細を見る</button></div>
+          <div class="kpis"><div class="kpi"><span class="muted">参加者</span><b id="participantCount">0</b></div><div class="kpi"><span class="muted">全データ</span><b id="dataPointCount">0</b></div><div class="kpi"><span class="muted">表示中</span><b id="visibleDataCount">0</b></div></div>
+        </section>
+
+        <section class="card"><h2>表示</h2><div class="body display-grid">
+          <div class="display-pair"><div><div class="label">表示対象</div><select id="sexFilter"><option value="all">全体</option><option value="male">男性</option><option value="female">女性</option></select></div><div><div class="label">★で強調するID</div><input id="highlightId" type="text" placeholder="例：S014"></div></div>
+          <div><div class="label">グラフスタイル</div><select id="graphStyle"><option value="elegant">標準（上品）</option><option value="high-visibility">高視認</option><option value="simple">シンプル</option><option value="custom">カスタム</option></select></div>
+          <div class="display-checks"><label class="check"><input id="showPoints" type="checkbox" checked>個々の点</label><label class="check"><input id="showMean" type="checkbox" checked>平均</label><label class="check"><input id="showReference" type="checkbox">参照データ</label><label class="check"><input id="showLegend" type="checkbox" checked>凡例</label><label class="check"><input id="showGrid" type="checkbox" checked>グリッド</label></div>
+          <div class="value-label-controls">
+            <div class="label">F1/F2値を図上に表示</div>
+            <div class="compact-grid-2"><select id="valueLabelMode"><option value="off">表示しない</option><option value="mean">平均だけ</option><option value="highlight">強調IDだけ</option><option value="all">全データ</option></select><select id="valueLabelFields"><option value="both">F1・F2</option><option value="f1">F1のみ</option><option value="f2">F2のみ</option></select></div>
+          </div>
+          <div class="connection-controls">
+            <div class="label">母音を線で結ぶ</div>
+            <select id="connectMode"><option value="none">結ばない</option><option value="mean">クラス平均</option><option value="highlight">強調ID</option><option value="both">平均＋強調ID</option></select>
+            <label class="check"><input id="referenceArrows" type="checkbox">同じ音素の参照値へ矢印</label>
+            <div class="tiny">表示中の母音だけを順に結び、3点以上なら最後から最初へ戻して閉じます。</div>
+            <div class="divider"></div>
+            <label class="check"><input id="polygonCompareEnabled" type="checkbox">2つの多角形を比較</label>
+            <div class="compact-grid-2">
+              <label><span class="label">比較A</span><select id="polygonSourceA">
+                <option value="visibleMean">表示中の平均</option><option value="classMean">クラス全体平均</option><option value="maleMean">男性平均</option><option value="femaleMean">女性平均</option><option value="noanswerMean">回答しない平均</option><option value="highlight">強調ID</option><option value="referenceMean">参照データ平均</option>
+              </select></label>
+              <label><span class="label">比較B</span><select id="polygonSourceB">
+                <option value="referenceMean">参照データ平均</option><option value="classMean">クラス全体平均</option><option value="visibleMean">表示中の平均</option><option value="maleMean">男性平均</option><option value="femaleMean">女性平均</option><option value="noanswerMean">回答しない平均</option><option value="highlight">強調ID</option>
+              </select></label>
+            </div>
+            <label class="check"><input id="polygonConnectors" type="checkbox">対応する母音の頂点どうしを結ぶ</label>
+            <div id="polygonCompareStatus" class="tiny">共通する表示母音を対応させ、3頂点以上なら閉じた多角形として重ねます。</div>
+          </div>
+          <div id="legendPositionWrap"><div class="label">凡例位置</div><select id="legendPosition"><option value="bottom-left">左下</option><option value="bottom-right">右下</option><option value="top-left">左上</option><option value="top-right">右上</option></select></div>
+          <div>
+            <div class="label row" style="gap:6px;align-items:center">楕円
+              <button id="ellipseInfoBtn" class="help-circle" type="button" aria-label="分布楕円と信頼楕円の説明">?</button>
+            </div>
+            <select id="ellipseMode"><option value="distribution">95%分布楕円</option><option value="confidence">95%信頼楕円</option><option value="both">両方</option><option value="none">表示しない</option></select>
+            <div id="ellipseHelp" class="tiny"></div>
+            </div>
+        </div></section>
+
+        <section class="card"><h2>母音・スタイル</h2><div class="body stack">
+          <div class="muted">通常は授業モードのままで使えます。</div>
+          <details class="advanced-settings"><summary>詳細設定を開く</summary><div class="stack">
+            <div class="row" style="justify-content:space-between"><div class="section-title">日本語</div><button class="small" data-add-group="ja">5母音を追加</button></div><div id="jaChips" class="chips"></div>
+            <div class="row" style="justify-content:space-between"><div class="section-title">米国英語・短母音</div><button class="small" data-add-group="en-short">短母音を追加</button></div><div id="enShortChips" class="chips"></div>
+            <div class="row" style="justify-content:space-between"><div class="section-title">米国英語・長母音</div><button class="small" data-add-group="en-long">長母音を追加</button></div><div id="enLongChips" class="chips"></div>
+            <div class="divider"></div>
+            <div class="section-title">音素を自由に追加</div>
+            <div class="custom-vowel-grid">
+              <div><div class="label">言語</div><select id="customVowelLanguage"><option value="en">英語</option><option value="ja">日本語</option></select></div>
+              <div><div class="label">音素</div><input id="customVowelLabel" type="text" placeholder="例：/æ/ または æ"></div>
+              <div><div class="label">例語・メモ（任意）</div><input id="customVowelExample" type="text" placeholder="例：stack"></div>
+              <div style="display:flex;align-items:end"><button id="addCustomVowelBtn" class="small full" type="button">音素を追加</button></div>
+            </div>
+            <div id="customChips" class="chips"></div>
+            <div id="customVowelList" class="custom-vowel-list"></div>
+            <div class="section-title">独自母音セット</div>
+            <div class="set-manager">
+              <div class="compact-grid-2"><input id="customSetName" type="text" placeholder="例：stack–stuck–stock"><button id="saveCustomSetBtn" class="small" type="button">現在のセットを保存</button></div>
+              <div class="saved-set-row"><select id="savedSetSelect"><option value="">保存済みセット</option></select><button id="loadCustomSetBtn" class="small" type="button">読み込む</button><button id="deleteCustomSetBtn" class="small danger" type="button">削除</button></div>
+              <div class="tiny">このブラウザに保存します。セッションへ反映すると参加者画面にも同じ音素セットが表示されます。</div>
+            </div>
+            <div class="divider"></div>
+            <div><div class="label">色分け</div><select id="colorMode"><option value="vowel">母音ごと</option><option value="language">言語ごと</option></select></div>
+            <table class="settings-table"><thead><tr><th>言語</th><th>形</th><th>言語色</th></tr></thead><tbody>
+              <tr><td><span class="badge-ja">日本語</span></td><td><select id="shapeJa" class="shape-select" aria-label="日本語の点の形"><option value="circle">●</option><option value="square">■</option><option value="diamond">◆</option><option value="triangle">▲</option></select></td><td><input id="langColorJa" type="color"></td></tr>
+              <tr><td><span class="badge-en">英語</span></td><td><select id="shapeEn" class="shape-select" aria-label="英語の点の形"><option value="square">■</option><option value="circle">●</option><option value="diamond">◆</option><option value="triangle">▲</option></select></td><td><input id="langColorEn" type="color"></td></tr>
+            </tbody></table>
+            <div class="row" style="justify-content:flex-end;margin-top:6px"><button id="resetStyleBtn" class="small" type="button">色・形をデフォルトに戻す</button></div>
+            <div class="section-title">点・平均</div>
+            <div class="visual-tuning-grid">
+              <label><span>個々の点の大きさ</span><input id="pointSize" type="range" min="2" max="8" step="0.5" value="3.5"><output id="pointSizeValue">3.5</output></label>
+              <label><span>個々の点の濃さ</span><input id="pointAlpha" type="range" min="0.15" max="1" step="0.05" value="0.4"><output id="pointAlphaValue">40%</output></label>
+              <label><span>平均の大きさ</span><input id="meanSize" type="range" min="4" max="11" step="0.5" value="6.5"><output id="meanSizeValue">6.5</output></label>
+              <label><span>音素ラベル</span><select id="phonemeBadgeStyle"><option value="badge">丸バッジ</option><option value="text">文字のみ</option></select><output></output></label>
+            </div>
+            <div class="section-title">楕円の線</div>
+            <div class="ellipse-style-grid">
+              <div class="ellipse-style-card">
+                <div class="ellipse-style-head"><b>95%分布楕円</b><span id="distributionLinePreview" class="line-preview"></span></div>
+                <div class="ellipse-style-controls">
+                  <label><span>色</span><select id="distributionColorMode"><option value="linked">母音色に連動</option><option value="custom">任意の色</option></select></label>
+                  <input id="distributionColor" type="color" aria-label="95%分布楕円の色">
+                  <label><span>線</span><select id="distributionLineStyle"><option value="solid">実線</option><option value="dashed">破線</option><option value="dotted">点線</option></select></label>
+                </div>
+                <div class="ellipse-width-row"><span class="label">太さ</span><input id="distributionLineWidth" type="range" min="1" max="5" step="0.5" value="2"><output id="distributionLineWidthValue">2 px</output></div>
+                <div class="ellipse-width-row"><span class="label">塗り</span><input id="distributionFillAlpha" type="range" min="0" max="0.30" step="0.02" value="0.12"><output id="distributionFillAlphaValue">12%</output></div>
+              </div>
+              <div class="ellipse-style-card">
+                <div class="ellipse-style-head"><b>95%信頼楕円</b><span id="confidenceLinePreview" class="line-preview dashed"></span></div>
+                <div class="ellipse-style-controls">
+                  <label><span>色</span><select id="confidenceColorMode"><option value="linked">母音色に連動</option><option value="custom">任意の色</option></select></label>
+                  <input id="confidenceColor" type="color" aria-label="95%信頼楕円の色">
+                  <label><span>線</span><select id="confidenceLineStyle"><option value="dashed">破線</option><option value="solid">実線</option><option value="dotted">点線</option></select></label>
+                </div>
+                <div class="ellipse-width-row"><span class="label">太さ</span><input id="confidenceLineWidth" type="range" min="1" max="5" step="0.5" value="2"><output id="confidenceLineWidthValue">2 px</output></div>
+              </div>
+            </div>
+            <div class="tiny">「母音色に連動」が標準です。任意の色を選んだ場合だけ色指定が使われます。</div>
+            <div class="section-title">音素記号</div>
+            <div class="display-pair">
+              <div><div class="label">フォント</div><select id="phonemeFont"><option value="Yu Gothic, YuGothic, sans-serif">游ゴシック</option><option value="Meiryo, sans-serif">メイリオ</option><option value="sans-serif">標準ゴシック</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Arial, sans-serif">Arial</option><option value="serif">明朝系</option></select></div>
+              <div><div class="label">大きさ</div><input id="phonemeFontSize" type="number" min="10" max="32" value="15"></div>
+            </div>
+            <div class="tiny">グラフ内の母音記号、凡例、学生入力画面の母音記号に共通して反映します。</div>
+            <div class="section-title">選択中の母音色</div><div id="vowelColorSettings"></div>
+            <div class="divider"></div>
+            <div class="section-title">グリッド・目盛</div>
+            <div class="grid-tick-settings">
+              <div class="grid-tick-row"><b>グリッド</b><label><span>色</span><input id="gridColor" type="color" value="#e2e8f0"></label><label><span>濃さ</span><input id="gridAlpha" type="range" min="0" max="1" step="0.05" value="1"><output id="gridAlphaValue">100%</output></label><label><span>太さ</span><input id="gridLineWidth" type="range" min="0.5" max="3" step="0.25" value="1"><output id="gridLineWidthValue">1 px</output></label></div>
+              <div class="grid-tick-row"><b>目盛文字</b><label><span>色</span><input id="tickColor" type="color" value="#526071"></label><label><span>濃さ</span><input id="tickAlpha" type="range" min="0.2" max="1" step="0.05" value="1"><output id="tickAlphaValue">100%</output></label><span></span></div>
+              <div class="grid-step-row"><label><span>F1 間隔</span><input id="f1TickStep" type="number" min="50" max="500" step="50" value="200"><span>Hz</span></label><label><span>F2 間隔</span><input id="f2TickStep" type="number" min="100" max="1000" step="100" value="500"><span>Hz</span></label></div>
+            </div>
+            <div class="tiny">標準は以前と同程度の濃さです。投影時は濃く、配布図では薄くするなど調整できます。</div>
+            <div class="section-title">平均の点</div>
+            <div class="compact-grid-3">
+              <label><span class="label">塗り</span><select id="meanMarkerFillMode"><option value="linked">母音色に連動</option><option value="custom">任意の色</option></select></label>
+              <label><span class="label">塗り色</span><input id="meanMarkerFillColor" type="color" value="#334155"></label>
+              <label class="check" style="align-self:end"><input id="meanMarkerOutline" type="checkbox" checked>輪郭線を表示</label>
+            </div>
+            <div class="compact-grid-3">
+              <label><span class="label">輪郭色</span><input id="meanMarkerOutlineColor" type="color" value="#111827"></label>
+              <label><span class="label">輪郭太さ</span><input id="meanMarkerOutlineWidth" type="number" min="0.5" max="6" step="0.5" value="1.5"></label>
+              <span></span>
+            </div>
+            <div class="section-title">通常の結線</div>
+            <div class="compact-grid-3">
+              <label><span class="label">平均線の色</span><input id="meanLineColor" type="color" value="#334155"></label>
+              <label><span class="label">平均線</span><select id="meanLineStyle"><option value="solid">実線</option><option value="dashed">破線</option><option value="dotted">点線</option></select></label>
+              <label><span class="label">太さ</span><input id="meanLineWidth" type="number" min="0.5" max="6" step="0.5" value="2"></label>
+              <label><span class="label">強調ID線の色</span><input id="highlightLineColor" type="color" value="#2563eb"></label>
+              <label><span class="label">強調ID線</span><select id="highlightLineStyle"><option value="dashed">破線</option><option value="solid">実線</option><option value="dotted">点線</option></select></label>
+              <label><span class="label">太さ</span><input id="highlightLineWidth" type="number" min="0.5" max="6" step="0.5" value="2"></label>
+              <label><span class="label">参照矢印の色</span><input id="referenceArrowColor" type="color" value="#64748b"></label>
+              <label><span class="label">参照矢印</span><select id="referenceArrowStyle"><option value="dotted">点線</option><option value="dashed">破線</option><option value="solid">実線</option></select></label>
+              <label><span class="label">太さ</span><input id="referenceArrowWidth" type="number" min="0.5" max="6" step="0.5" value="1.5"></label>
+            </div>
+            <div class="section-title">多角形比較 A</div>
+            <div class="compact-grid-3">
+              <label><span class="label">色</span><input id="polygonAColor" type="color" value="#2563eb"></label>
+              <label><span class="label">線</span><select id="polygonALineStyle"><option value="solid">実線</option><option value="dashed">破線</option><option value="dotted">点線</option></select></label>
+              <label><span class="label">太さ</span><input id="polygonALineWidth" type="number" min="0.5" max="6" step="0.5" value="2.5"></label>
+            </div>
+            <label><span class="label">塗りの濃さ</span><input id="polygonAFillAlpha" type="range" min="0" max="0.35" step="0.01" value="0.10"><output id="polygonAFillAlphaValue">10%</output></label>
+            <div class="section-title">多角形比較 B</div>
+            <div class="compact-grid-3">
+              <label><span class="label">色</span><input id="polygonBColor" type="color" value="#dc2626"></label>
+              <label><span class="label">線</span><select id="polygonBLineStyle"><option value="dashed">破線</option><option value="solid">実線</option><option value="dotted">点線</option></select></label>
+              <label><span class="label">太さ</span><input id="polygonBLineWidth" type="number" min="0.5" max="6" step="0.5" value="2.5"></label>
+            </div>
+            <label><span class="label">塗りの濃さ</span><input id="polygonBFillAlpha" type="range" min="0" max="0.35" step="0.01" value="0.10"><output id="polygonBFillAlphaValue">10%</output></label>
+            <div class="compact-grid-3">
+              <label class="check"><input id="polygonShowVertices" type="checkbox" checked>頂点を表示</label>
+              <label class="check"><input id="polygonShowLabels" type="checkbox" checked>母音ラベルを表示</label>
+              <label><span class="label">頂点サイズ</span><input id="polygonVertexSize" type="number" min="2" max="10" step="0.5" value="5"></label>
+            </div>
+            <div class="section-title">頂点対応線</div>
+            <div class="compact-grid-3">
+              <label><span class="label">色</span><input id="polygonConnectorColor" type="color" value="#94a3b8"></label>
+              <label><span class="label">線</span><select id="polygonConnectorStyle"><option value="dotted">点線</option><option value="dashed">破線</option><option value="solid">実線</option></select></label>
+              <label><span class="label">太さ</span><input id="polygonConnectorWidth" type="number" min="0.5" max="4" step="0.5" value="1"></label>
+            </div>
+            <div class="tiny">比較A/Bは共通する表示母音を対応させます。3点以上なら閉じ、2点なら1本の線、1点以下なら線を描きません。</div>
+            <div class="section-title">図内タイトル</div>
+            <div><div class="label">タイトル</div><input id="plotTitle" type="text" placeholder="例：日本語5母音のF1–F2分布"></div>
+            <div class="chart-title-help">タイトルは図内で直接ドラッグして自由に移動できます。</div>
+            <div class="display-pair"><div><div class="label">タイトルのフォント</div><select id="titleFont"><option value="Yu Gothic, YuGothic, sans-serif">游ゴシック</option><option value="Meiryo, sans-serif">メイリオ</option><option value="sans-serif">標準ゴシック</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Arial, sans-serif">Arial</option><option value="serif">明朝系</option></select></div><div><div class="label">大きさ</div><input id="titleFontSize" type="number" min="10" max="48" value="18"></div></div>
+            <div class="display-pair"><div><div class="label">目盛のフォント</div><select id="tickFont"><option value="Yu Gothic, YuGothic, sans-serif">游ゴシック</option><option value="Meiryo, sans-serif">メイリオ</option><option value="sans-serif">標準ゴシック</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Arial, sans-serif">Arial</option><option value="serif">明朝系</option></select></div><div><div class="label">大きさ</div><input id="tickFontSize" type="number" min="8" max="32" value="12"></div></div>
+            <div class="chart-title-help">タイトルと F1 / F2 の軸名・単位は、図内で直接ドラッグして自由に配置できます。</div><div class="display-pair"><div><div class="label">単位・軸名のフォント</div><select id="unitFont"><option value="Yu Gothic, YuGothic, sans-serif">游ゴシック</option><option value="Meiryo, sans-serif">メイリオ</option><option value="sans-serif">標準ゴシック</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Arial, sans-serif">Arial</option><option value="serif">明朝系</option></select></div><div><div class="label">大きさ</div><input id="unitFontSize" type="number" min="8" max="32" value="13"></div></div>
+            <button id="resetTitlePositionBtn" class="small">タイトル位置を中央上部に戻す</button>
+            <details><summary class="label">軸の表示範囲</summary><div class="stack" style="margin-top:8px">
+              <div class="row"><label class="label" style="width:55px">F1</label><input id="f1Min" type="number" style="width:85px"><span>～</span><input id="f1Max" type="number" style="width:85px"><span>Hz</span></div>
+              <div class="row"><label class="label" style="width:55px">F2</label><input id="f2Min" type="number" style="width:85px"><span>～</span><input id="f2Max" type="number" style="width:85px"><span>Hz</span></div>
+            </div></details>
+          </div></details>
+          <button id="saveSettingsBtn" class="soft full">この設定をセッションに反映</button>
+        </div></section>
+
+        <section class="card"><h2>参照データ・保存</h2><div class="body stack">
+          <div class="muted">母語話者などの参照データをCSVで読み込み、クラスデータに重ねられます。</div>
+          <div class="ref-drop"><input id="refFile" type="file" accept=".csv,text/csv"><div class="tiny">列：language, vowel, f1, f2（languageは省略可）</div></div>
+          <div id="refStatus" class="muted">未読込</div>
+          <div class="divider"></div>
+          <div class="section-title">図を書き出す</div>
+          <div class="compact-grid-2"><div><div class="label">背景</div><select id="exportBackground"><option value="white">白</option><option value="transparent">透明</option></select></div><div><div class="label">PNG解像度</div><select id="exportScale"><option value="2">2×</option><option value="3" selected>3×（推奨）</option></select></div></div>
+          <div class="export-actions"><button id="exportPngBtn">PNG保存</button><button id="exportSvgBtn">SVG保存</button><button id="copyChartBtn">図をコピー</button><button id="ellipseEquationBtn">楕円の式</button></div>
+          <div class="export-note">図だけを書き出します。PNGは高解像度、SVGはベクター形式です。</div>
+          <div class="divider"></div>
+          <div class="section-title">データを書き出す</div>
+          <div class="rail-actions"><button id="exportCsvBtn">CSV保存</button><button id="exportXlsxBtn">Excel保存</button></div>
+        </div></section>
+
+        <section class="card"><h2>セッション管理</h2><div class="body stack"><button id="closeSessionBtn" class="danger">セッションを終了</button><div class="tiny">教師用URLを持つ人だけが設定変更・終了できます。</div></div></section>
+      </aside>
+    </div>
+  </div>
+
+  <div id="studentView" class="student-layout hidden">
+    <aside>
+      <section class="card"><h2>入力</h2><div class="body stack">
+        <div><div class="label">授業コード</div><div class="row"><input id="studentJoinCode" type="text" placeholder="例：AB12CD" style="text-transform:uppercase"><button id="studentJoinBtn" class="primary">参加</button></div><div class="tiny">参加URLから開いた場合は自動入力されます。</div></div>
+        <div id="studentJoinStatus"></div>
+        <div class="notice info">この授業で選択されている母音だけが表示されます。</div>
+        <div><div class="label">ID（ニックネーム可）</div><input id="studentId" type="text" placeholder="例：S014"><div class="tiny">氏名・学籍番号などの個人情報を使わず、授業内IDの利用を推奨します。</div></div>
+        <div><div class="label">性別（任意）</div><select id="studentSex"><option value="noanswer">回答しない</option><option value="male">男性</option><option value="female">女性</option></select></div>
+        <div id="studentInputs" class="vowel-inputs"></div>
+        <button id="submitBtn" class="primary full">クラスに送信／更新</button>
+        <div id="studentStatus"></div>
+        <div class="tiny">PCでPraat等と併用し、測定したF1/F2値を入力する想定です。</div>
+      </div></section>
+    </aside>
+    <section>
+      <section class="card"><h2>クラスの中の自分 ★</h2><div class="body">
+        <div class="chart-shell"><canvas id="studentCanvas"></canvas></div><div id="studentLegend" class="legend"></div><div class="tiny" style="margin-top:5px">★＝自分　薄い記号＝クラスの個々のデータ　濃い大きな記号＝平均　楕円設定は教師画面と共通</div>
+      </div></section>
+    </section>
+    <div class="rightcol">
+      <section class="card"><h2>セッション</h2><div class="body stack"><div><span class="label">コード</span><div id="studentSessionCode" class="code"></div></div><div id="studentSessionName"></div><button id="studentRefreshBtn">最新の状態を取得</button></div></section>
+    </div>
+  </div>
+  <div id="inputStatusDialog" class="input-status-dialog modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="inputStatusTitle"><div class="modal-card"><div class="dialog-head"><h2 id="inputStatusTitle" class="sr-only">入力状況</h2><h2>入力状況</h2><span id="statusDialogSummary" class="muted"></span><span class="spacer"></span><button id="closeStatusDialogBtn" class="small">閉じる</button></div><div class="dialog-body"><table class="status-table"><thead><tr><th>ID</th><th>性別</th><th>入力状況</th><th>未入力</th><th>データ点</th><th>最終更新</th><th>値</th></tr></thead><tbody id="inputStatusBody"></tbody></table></div></div></div>
+<div id="ellipseInfoPopup" class="help-popup help-popup-top hidden" role="dialog" aria-modal="false" aria-label="楕円の説明">
+  <div class="help-popup-head"><b>楕円について</b><button id="ellipseInfoCloseBtn" class="small" type="button">閉じる</button></div>
+  <p><b>95%分布楕円</b><br>個々のデータが、平均のまわりにどのくらい広く散らばっているかを示します。楕円が大きいほど、個人差や測定値のばらつきが大きいことを表します。</p>
+  <p><b>95%信頼楕円</b><br>データから求めた平均値について、母集団の本当の平均がどのあたりにあると推定されるかを示します。楕円が小さいほど、平均値の位置をより精確に推定できていることを表します。</p>
+  <p><b>両方を表示すると</b><br>外側の分布楕円で「個々のデータがどれくらい散らばっているか」、内側の信頼楕円で「そのデータから平均の位置をどれくらい精確に推定できるか」を同時に確認できます。</p>
+  <p class="tiny">※ 信頼楕円は「データの95%が入る範囲」ではありません。</p>
+  <div class="divider"></div>
+  <p class="tiny"><b>計算方法（概要）</b><br>95%分布楕円：標本平均と標本共分散行列 S を用い、(x−μ)ᵀS⁻¹(x−μ) = χ²₂(.95) = 5.991 を境界とします。<br>95%信頼楕円：母平均の95%信頼領域として、Hotelling の T² に基づく係数を用います。いずれも n &lt; 5 では表示しません。</p>
+</div>
+<div id="ellipseEquationDialog" class="input-status-dialog modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ellipseEquationTitle"><div class="modal-card"><div class="dialog-head"><h2 id="ellipseEquationTitle">表示中の楕円の式</h2><span class="spacer"></span><button id="closeEllipseEquationBtn" class="small">閉じる</button></div><div class="dialog-body"><div class="tiny">x = F2 (Hz)、y = F1 (Hz)。現在の表示対象・楕円モードから算出します。楕円式は A x² + B xy + C y² + D x + E y + F = 0 の形で表示します。</div><div id="ellipseEquationList" class="equation-list" style="margin-top:10px"></div><div class="modal-actions"><button id="copyEllipseEquationsBtn" class="primary">すべてコピー</button></div></div></div></div>
+<div id="pointTooltip" class="point-tooltip hidden" role="status" aria-live="polite"></div>
+</main>
+<script>
+const BASE_VOWELS={
+  'ja:i':{language:'ja',label:'/i/',group:'ja'},'ja:e':{language:'ja',label:'/e/',group:'ja'},'ja:a':{language:'ja',label:'/a/',group:'ja'},'ja:o':{language:'ja',label:'/o/',group:'ja'},'ja:u':{language:'ja',label:'/u/',group:'ja'},
+  'en:ɪ':{language:'en',label:'/ɪ/',group:'en-short'},'en:ɛ':{language:'en',label:'/ɛ/',group:'en-short'},'en:æ':{language:'en',label:'/æ/',group:'en-short'},'en:ɑs':{language:'en',label:'/ɑ/',group:'en-short'},'en:ʌ':{language:'en',label:'/ʌ/',group:'en-short'},'en:ʊ':{language:'en',label:'/ʊ/',group:'en-short'},
+  'en:iː':{language:'en',label:'/iː/',group:'en-long'},'en:ɑː':{language:'en',label:'/ɑː/',group:'en-long'},'en:ɒː':{language:'en',label:'/ɒː/',group:'en-long'},'en:uː':{language:'en',label:'/uː/',group:'en-long'},'en:ɚː':{language:'en',label:'/ɚː/',group:'en-long'}
+};
+let VOWELS={...BASE_VOWELS};
+const GROUPS={ja:['ja:i','ja:e','ja:a','ja:o','ja:u'],'en-short':['en:ɪ','en:ɛ','en:æ','en:ɑs','en:ʌ','en:ʊ'],'en-long':['en:iː','en:ɑː','en:ɒː','en:uː','en:ɚː']};
+const PRESET={ja5:GROUPS.ja,'en-short':GROUPS['en-short'],'en-long':GROUPS['en-long']};
+const DEFAULT_COLORS={'en:ɑs':'#dc2626','en:iː':'#2563eb','en:ɑː':'#dc2626','en:ɒː':'#d97706','en:uː':'#16a34a','en:ɚː':'#9333ea','ja:i':'#2563eb','ja:e':'#7c3aed','ja:a':'#ef4444','ja:o':'#f59e0b','ja:u':'#16a34a','en:ɪ':'#0284c7','en:ɛ':'#7c3aed','en:æ':'#e11d48','en:ʌ':'#be123c','en:ʊ':'#22c55e','en:i':'#2563eb','en:ɑ':'#dc2626','en:ɔ':'#d97706','en:u':'#16a34a','en:ɝ':'#9333ea'};
+const DEMO_DATA=(()=>{
+  const base={'ja:i':[315,2580],'ja:e':[480,2180],'ja:a':[790,1400],'ja:o':[560,1030],'ja:u':[360,1110]};
+  const offsets=[[-35,110],[-20,-90],[-8,45],[6,-35],[18,85],[28,-120],[38,20],[-15,140]];
+  const out=[];
+  offsets.forEach((off,i)=>{Object.entries(base).forEach(([key,b],j)=>{const v=VOWELS[key];out.push({participantId:'A'+String(i+1).padStart(2,'0'),sex:i===7?'noanswer':(i%2?'male':'female'),language:v.language,vowelKey:key,vowel:v.label,f1:b[0]+off[0]+(j-2)*3,f2:b[1]+off[1]+(j-2)*18,timestamp:new Date(Date.now()-(7-i)*60000).toISOString()});});});
+  return out;
+})();
+
+let settings={graphStyle:'elegant',pointSize:3.5,pointAlpha:.4,meanSize:6.5,gridAlpha:1,gridColor:'#e2e8f0',gridLineWidth:1,tickColor:'#526071',tickAlpha:1,f1TickStep:200,f2TickStep:500,phonemeBadgeStyle:'badge',preset:'ja5',selectedVowels:[...GROUPS.ja],customVowels:{},colorMode:'vowel',languageShapes:{ja:'circle',en:'square'},vowelColors:{...DEFAULT_COLORS},languageColors:{ja:'#2563eb',en:'#dc2626'},showPoints:true,showMean:true,showLegend:true,showGrid:true,valueLabelMode:'off',valueLabelFields:'both',connectMode:'none',referenceArrows:false,meanLineColor:'#334155',meanLineStyle:'solid',meanLineWidth:2,highlightLineColor:'#2563eb',highlightLineStyle:'dashed',highlightLineWidth:2,referenceArrowColor:'#64748b',referenceArrowStyle:'dotted',referenceArrowWidth:1.5,meanMarkerFillMode:'linked',meanMarkerFillColor:'#334155',meanMarkerOutline:true,meanMarkerOutlineColor:'#111827',meanMarkerOutlineWidth:1.5,polygonCompareEnabled:false,polygonSourceA:'visibleMean',polygonSourceB:'referenceMean',polygonAStyle:{color:'#2563eb',lineStyle:'solid',lineWidth:2.5,fillAlpha:.10},polygonBStyle:{color:'#dc2626',lineStyle:'dashed',lineWidth:2.5,fillAlpha:.10},polygonShowVertices:true,polygonShowLabels:true,polygonVertexSize:5,polygonConnectors:false,polygonConnectorColor:'#94a3b8',polygonConnectorStyle:'dotted',polygonConnectorWidth:1,legendPosition:'bottom-left',ellipseMode:'distribution',ellipseStyles:{distribution:{colorMode:'linked',color:'#64748b',lineStyle:'solid',lineWidth:2,fillAlpha:.12},confidence:{colorMode:'linked',color:'#64748b',lineStyle:'dashed',lineWidth:2,fillAlpha:0}},phonemeFont:'Yu Gothic, YuGothic, sans-serif',phonemeFontSize:15,plotTitle:'',titleX:.5,titleY:.06,titleFont:'Yu Gothic, YuGothic, sans-serif',titleFontSize:18,tickFont:'Yu Gothic, YuGothic, sans-serif',tickFontSize:12,unitFont:'Yu Gothic, YuGothic, sans-serif',unitFontSize:13,f2LabelX:.5,f2LabelY:-.07,f1LabelX:1.06,f1LabelY:.5,f1Min:200,f1Max:1200,f2Min:500,f2Max:3500};
+let snapshot={data:[],participantCount:0,dataPointCount:0,sessionName:'',settings};
+let pointHitMaps=new WeakMap();
+let referenceData=[];let currentSession='';let teacherToken='';let recoveryKey='';let settingsDirty=false;let isDemo=!(window.B1Backend&&B1Backend.run);let role='teacher';let pollTimer=null;let pollFailures=0;let lastSyncAt=null;
+const $=id=>document.getElementById(id);
+function qparams(){return new URLSearchParams(location.search)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function setStatus(id,msg,type=''){const el=$(id);if(!el)return;el.className=msg?'notice '+(type||'info'):'';el.textContent=msg||''}
+function langName(x){return x==='ja'?'日本語':'英語'}
+function deepClone(x){return JSON.parse(JSON.stringify(x))}
+const DEFAULT_SETTINGS=deepClone(settings);
+function normalizeSettings(incoming){
+  const x=(incoming&&typeof incoming==='object')?incoming:{};
+  const out={...deepClone(DEFAULT_SETTINGS),...deepClone(x)};
+  out.selectedVowels=Array.isArray(x.selectedVowels)?[...x.selectedVowels]:[...DEFAULT_SETTINGS.selectedVowels];
+  out.customVowels={...DEFAULT_SETTINGS.customVowels,...(x.customVowels||{})};
+  out.languageShapes={...DEFAULT_SETTINGS.languageShapes,...(x.languageShapes||{})};
+  out.vowelColors={...DEFAULT_SETTINGS.vowelColors,...(x.vowelColors||{})};
+  out.languageColors={...DEFAULT_SETTINGS.languageColors,...(x.languageColors||{})};
+  const xe=x.ellipseStyles||{};
+  out.ellipseStyles={
+    distribution:{...DEFAULT_SETTINGS.ellipseStyles.distribution,...(xe.distribution||{})},
+    confidence:{...DEFAULT_SETTINGS.ellipseStyles.confidence,...(xe.confidence||{})}
+  };
+  out.polygonAStyle={...DEFAULT_SETTINGS.polygonAStyle,...(x.polygonAStyle||{})};
+  out.polygonBStyle={...DEFAULT_SETTINGS.polygonBStyle,...(x.polygonBStyle||{})};
+  return out;
+}
+const TEACHER_TOKEN_STORE='b1-f1f2-teacher-token-';
+function tokenStoreKey(sid){return TEACHER_TOKEN_STORE+String(sid||'').trim().toUpperCase()}
+function rememberTeacherToken(sid,token){if(!sid||!token)return;try{sessionStorage.setItem(tokenStoreKey(sid),String(token))}catch(_){}}
+function restoreTeacherToken(sid){if(!sid)return'';try{return sessionStorage.getItem(tokenStoreKey(sid))||''}catch(_){return''}}
+function forgetTeacherToken(sid){if(!sid)return;try{sessionStorage.removeItem(tokenStoreKey(sid))}catch(_){}}
+function teacherHistoryUrl(){return currentSession?`?role=teacher&session=${encodeURIComponent(currentSession)}`:'?role=teacher'}
+function scrubTeacherTokenFromUrl(){if(role!=='teacher')return;const p=qparams();if(p.has('token'))history.replaceState(null,'',teacherHistoryUrl())}
+function setSyncStat(text,type=''){const el=$('syncStat');if(!el)return;el.className='syncstat'+(type?' '+type:'');el.textContent=text||''}
+function syncTimeLabel(value){const d=value?new Date(value):new Date();if(Number.isNaN(d.getTime()))return'';return d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function markSyncSuccess(value){pollFailures=0;lastSyncAt=value||new Date().toISOString();setSyncStat('同期 '+syncTimeLabel(lastSyncAt),'ok')}
+function markSyncFailure(){pollFailures=Math.min(5,pollFailures+1);setSyncStat('再接続中','warn')}
+
+window.addEventListener('load',init);
+window.addEventListener('resize',()=>renderAll());
+function init(){
+  const p=qparams();role=p.get('role')||'teacher';currentSession=String(p.get('session')||'').trim().toUpperCase();teacherToken=p.get('token')||'';
+  if(role==='teacher'&&currentSession){if(teacherToken)rememberTeacherToken(currentSession,teacherToken);else teacherToken=restoreTeacherToken(currentSession);scrubTeacherTokenFromUrl();}
+  if(isDemo){$('demoBanner').classList.remove('hidden');setSyncStat('プレビュー');}
+  hydrateCustomVowels();buildChips();bindEvents();bindWorkspaceResizing();applySettingsToUI();renderSavedSetOptions();
+  if(role==='student'){showStudent();$('studentJoinCode').value=currentSession||'';if(currentSession){joinStudentSession(true);}else{setStatus('studentJoinStatus','授業コードを入力して参加してください。','info');buildStudentInputs();renderAll();}}
+  else {showTeacher();if(currentSession)refreshSnapshot();else loadDemoTeacher();}
+}
+function bindEvents(){
+  $('graphStyle').addEventListener('change',()=>applyGraphStyle($('graphStyle').value));
+  ['valueLabelMode','valueLabelFields','connectMode','polygonSourceA','polygonSourceB','meanLineStyle','highlightLineStyle','referenceArrowStyle','meanMarkerFillMode','polygonALineStyle','polygonBLineStyle','polygonConnectorStyle'].forEach(id=>$(id).addEventListener('change',()=>{readComparisonSettingsFromUI();settingsDirty=true;renderAll();syncSettingsIfSession();}));
+  ['referenceArrows','polygonCompareEnabled','polygonConnectors','meanMarkerOutline','polygonShowVertices','polygonShowLabels'].forEach(id=>$(id).addEventListener('change',()=>{readComparisonSettingsFromUI();settingsDirty=true;renderAll();syncSettingsIfSession();}));
+  ['meanLineColor','highlightLineColor','referenceArrowColor','meanMarkerFillColor','meanMarkerOutlineColor','polygonAColor','polygonBColor','polygonConnectorColor','meanLineWidth','highlightLineWidth','referenceArrowWidth','meanMarkerOutlineWidth','polygonALineWidth','polygonBLineWidth','polygonVertexSize','polygonConnectorWidth'].forEach(id=>$(id).addEventListener('change',()=>{readComparisonSettingsFromUI();settingsDirty=true;renderAll();syncSettingsIfSession();}));
+  ['polygonAFillAlpha','polygonBFillAlpha'].forEach(id=>$(id).addEventListener('input',()=>{readComparisonSettingsFromUI();settingsDirty=true;renderAll();}));
+  $('addCustomVowelBtn').addEventListener('click',addCustomVowelFromUI);$('saveCustomSetBtn').addEventListener('click',saveCurrentCustomSet);$('loadCustomSetBtn').addEventListener('click',loadSelectedCustomSet);$('deleteCustomSetBtn').addEventListener('click',deleteSelectedCustomSet);
+  $('exportPngBtn').addEventListener('click',exportPng);$('exportSvgBtn').addEventListener('click',exportSvg);$('copyChartBtn').addEventListener('click',copyChartToClipboard);$('ellipseEquationBtn').addEventListener('click',openEllipseEquationDialog);$('closeEllipseEquationBtn').addEventListener('click',closeEllipseEquationDialog);$('copyEllipseEquationsBtn').addEventListener('click',copyEllipseEquations);$('ellipseEquationDialog').addEventListener('click',e=>{if(e.target===$('ellipseEquationDialog'))closeEllipseEquationDialog();});
+  ['gridAlpha','gridLineWidth','tickAlpha'].forEach(id=>$(id).addEventListener('input',()=>{readGridTickSettingsFromUI();markGraphStyleCustom();settingsDirty=true;renderAll();}));
+  ['gridColor','tickColor','f1TickStep','f2TickStep'].forEach(id=>$(id).addEventListener('change',()=>{readGridTickSettingsFromUI();markGraphStyleCustom();settingsDirty=true;renderAll();syncSettingsIfSession();}));
+  ['pointSize','pointAlpha','meanSize','distributionFillAlpha'].forEach(id=>$(id).addEventListener('input',()=>{ensureEllipseStyles();settings.pointSize=Number($('pointSize').value);settings.pointAlpha=Number($('pointAlpha').value);settings.meanSize=Number($('meanSize').value);settings.ellipseStyles.distribution.fillAlpha=Number($('distributionFillAlpha').value);markGraphStyleCustom();applyGraphStyleToUI();updateEllipseStylePreviews();settingsDirty=true;renderAll();}));
+  $('phonemeBadgeStyle').addEventListener('change',()=>{settings.phonemeBadgeStyle=$('phonemeBadgeStyle').value;markGraphStyleCustom();settingsDirty=true;renderAll();syncSettingsIfSession();});
+
+  document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.preset)));document.querySelectorAll('[data-add-group]').forEach(b=>b.addEventListener('click',()=>addGroup(b.dataset.addGroup)));
+  ['colorMode','shapeJa','shapeEn','langColorJa','langColorEn','legendPosition','titleFont','titleFontSize','tickFont','tickFontSize','unitFont','unitFontSize','phonemeFont','phonemeFontSize','f1Min','f1Max','f2Min','f2Max'].forEach(id=>$(id).addEventListener('change',()=>{readSettingsFromUI();setPresetCustom();settingsDirty=true;renderAll();}));
+  ['sexFilter','highlightId','showPoints','showMean','showReference','showLegend','showGrid'].forEach(id=>$(id).addEventListener(id==='highlightId'?'input':'change',()=>{readSettingsFromUI();renderAll();}));$('ellipseMode').addEventListener('change',()=>{settings.ellipseMode=$('ellipseMode').value;setPresetCustom();settingsDirty=true;renderAll();});
+  $('createSessionBtn').addEventListener('click',createSession);$('showResumeBtn').addEventListener('click',()=>{ $('resumeBox').classList.toggle('hidden'); });$('resumeSessionBtn').addEventListener('click',resumeSession);$('copyRecoveryBtn').addEventListener('click',copyRecoveryInfo);$('saveSettingsBtn').addEventListener('click',saveSettings);$('refreshBtn').addEventListener('click',refreshSnapshot);$('copyUrlBtn').addEventListener('click',copyStudentUrl);$('openStudentBtn').addEventListener('click',openStudentView);$('closeSessionBtn').addEventListener('click',closeSession);
+  $('exportCsvBtn').addEventListener('click',exportCsv);$('exportXlsxBtn').addEventListener('click',exportXlsx);$('refFile').addEventListener('change',loadReferenceFile);
+  $('studentJoinBtn').addEventListener('click',()=>joinStudentSession(false));$('studentJoinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinStudentSession(false);});$('submitBtn').addEventListener('click',submitStudent);$('studentRefreshBtn').addEventListener('click',refreshSnapshot);$('studentId').addEventListener('input',renderAll);$('plotTitle').addEventListener('input',()=>{settings.plotTitle=$('plotTitle').value;settingsDirty=true;renderAll();});$('resetTitlePositionBtn').addEventListener('click',()=>{settings.titleX=.5;settings.titleY=.06;settings.f2LabelX=.5;settings.f2LabelY=-.07;settings.f1LabelX=1.06;settings.f1LabelY=.5;settingsDirty=true;renderAll();});$('resetStyleBtn').addEventListener('click',resetDisplayStyle);
+  ['distributionColorMode','distributionColor','distributionLineStyle','confidenceColorMode','confidenceColor','confidenceLineStyle'].forEach(id=>$(id).addEventListener('change',()=>{readEllipseStylesFromUI();markGraphStyleCustom();updateEllipseStylePreviews();settingsDirty=true;renderAll();syncSettingsIfSession();}));
+  ['distributionLineWidth','confidenceLineWidth'].forEach(id=>$(id).addEventListener('input',()=>{readEllipseStylesFromUI();markGraphStyleCustom();updateEllipseStylePreviews();settingsDirty=true;renderAll();}));
+  $('ellipseInfoBtn').addEventListener('click',e=>{e.stopPropagation();$('ellipseInfoPopup').classList.toggle('hidden');});
+  $('ellipseInfoCloseBtn').addEventListener('click',()=>$('ellipseInfoPopup').classList.add('hidden'));
+  document.addEventListener('click',e=>{if(!$('ellipseInfoPopup').classList.contains('hidden')&&!$('ellipseInfoPopup').contains(e.target)&&e.target!==$('ellipseInfoBtn'))$('ellipseInfoPopup').classList.add('hidden');});$('fullscreenBtn').addEventListener('click',enterFullscreen);$('fullscreenExitBtn').addEventListener('click',exitFullscreen);$('statusPanel').addEventListener('click',openInputStatus);$('statusDetailsBtn').addEventListener('click',e=>{e.stopPropagation();openInputStatus();});$('statusPanel').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openInputStatus();}});$('closeStatusDialogBtn').addEventListener('click',closeInputStatus);$('inputStatusDialog').addEventListener('click',e=>{if(e.target===$('inputStatusDialog'))closeInputStatus();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('inputStatusDialog').classList.contains('hidden'))closeInputStatus();});bindTitleDragging();
+}
+
+function bindWorkspaceResizing(){
+  const ws=document.querySelector('.teacher-workspace'),vr=$('workspaceResizer'),cr=$('chartResizer'),chart=$('teacherChartShell');
+  if(vr&&ws){
+    vr.addEventListener('pointerdown',e=>{if(window.innerWidth<=980)return;vr.classList.add('dragging');vr.setPointerCapture(e.pointerId);});
+    vr.addEventListener('pointermove',e=>{if(!vr.classList.contains('dragging'))return;const r=ws.getBoundingClientRect();let rail=r.right-e.clientX;rail=Math.max(320,Math.min(580,rail));ws.style.setProperty('--rail-width',rail+'px');renderAll();});
+    const end=()=>vr.classList.remove('dragging');vr.addEventListener('pointerup',end);vr.addEventListener('pointercancel',end);
+    vr.addEventListener('dblclick',()=>{ws.style.setProperty('--rail-width','400px');renderAll();});
+  }
+  if(cr&&chart){
+    cr.addEventListener('pointerdown',e=>{cr.classList.add('dragging');cr.setPointerCapture(e.pointerId);});
+    cr.addEventListener('pointermove',e=>{if(!cr.classList.contains('dragging'))return;const r=chart.getBoundingClientRect();let h=e.clientY-r.top;h=Math.max(360,Math.min(900,h));chart.style.height=h+'px';renderAll();});
+    const end=()=>cr.classList.remove('dragging');cr.addEventListener('pointerup',end);cr.addEventListener('pointercancel',end);
+    cr.addEventListener('dblclick',()=>{chart.style.height='650px';renderAll();});
+  }
+}
+
+function showTeacher(){$('teacherView').classList.remove('hidden');$('studentView').classList.add('hidden');}
+function showStudent(){$('teacherView').classList.add('hidden');$('studentView').classList.remove('hidden');$('refreshBtn').classList.add('hidden');buildStudentInputs();}
+function loadDemoTeacher(){snapshot={data:deepClone(DEMO_DATA),participantCount:new Set(DEMO_DATA.map(x=>x.participantId)).size,dataPointCount:DEMO_DATA.length,sessionName:'プレビュー',settings:deepClone(settings)};renderAll();}
+function loadDemoStudent(){snapshot={data:[],participantCount:0,dataPointCount:0,sessionName:'',settings:deepClone(settings)};buildStudentInputs();renderAll();}
+
+function buildChips(){
+  const targets={ja:'jaChips','en-short':'enShortChips','en-long':'enLongChips'};
+  Object.entries(targets).forEach(([group,id])=>{const wrap=$(id);wrap.innerHTML='';GROUPS[group].forEach(key=>{const v=VOWELS[key];const lab=document.createElement('label');lab.className='chip';lab.innerHTML=`<input type="checkbox" data-vowel="${esc(key)}"><span class="${v.language==='ja'?'lang-ja':'lang-en'}">${esc(v.label)}</span>`;lab.querySelector('input').addEventListener('change',()=>{readSelectedVowels();markCustomIfNeeded();settingsDirty=true;renderVowelColorSettings();renderAll();syncSettingsIfSession();});wrap.appendChild(lab);});});
+  renderCustomVowelUI();
+}
+function syncSettingsIfSession(){
+  if(role!=='teacher'||!currentSession)return;
+  if(isDemo){snapshot.settings=deepClone(settings);saveDemoSession();return;}
+  B1Backend.run.withSuccessHandler(res=>{if(res&&res.settings){snapshot.settings=normalizeSettings(res.settings);settingsDirty=false;markSyncSuccess(res.updatedAt);}}).withFailureHandler(()=>{markSyncFailure();}).updateSessionSettings(currentSession,teacherToken,settings);
+}
+
+function applyGridTickSettingsToUI(){if(!$('gridColor'))return;$('gridColor').value=settings.gridColor||'#e2e8f0';$('gridAlpha').value=settings.gridAlpha??1;$('gridAlphaValue').textContent=Math.round((settings.gridAlpha??1)*100)+'%';$('gridLineWidth').value=settings.gridLineWidth??1;$('gridLineWidthValue').textContent=(settings.gridLineWidth??1)+' px';$('tickColor').value=settings.tickColor||'#526071';$('tickAlpha').value=settings.tickAlpha??1;$('tickAlphaValue').textContent=Math.round((settings.tickAlpha??1)*100)+'%';$('f1TickStep').value=settings.f1TickStep||200;$('f2TickStep').value=settings.f2TickStep||500;}
+function readGridTickSettingsFromUI(){settings.gridColor=$('gridColor').value;settings.gridAlpha=Math.max(0,Math.min(1,Number($('gridAlpha').value)));settings.gridLineWidth=Math.max(.5,Math.min(3,Number($('gridLineWidth').value)||1));settings.tickColor=$('tickColor').value;settings.tickAlpha=Math.max(.2,Math.min(1,Number($('tickAlpha').value)));settings.f1TickStep=Math.max(50,Math.min(500,Number($('f1TickStep').value)||200));settings.f2TickStep=Math.max(100,Math.min(1000,Number($('f2TickStep').value)||500));applyGridTickSettingsToUI();}
+function applyGraphStyle(name,markDirty=true){
+  settings.graphStyle=name;
+  ensureEllipseStyles();
+  if(name==='elegant'){
+    settings.pointSize=3.5;settings.pointAlpha=.4;settings.meanSize=6.5;settings.gridAlpha=1;settings.gridColor='#e2e8f0';settings.gridLineWidth=1;settings.tickColor='#526071';settings.tickAlpha=1;settings.f1TickStep=200;settings.f2TickStep=500;settings.phonemeBadgeStyle='badge';
+    settings.ellipseStyles.distribution.lineWidth=2;settings.ellipseStyles.distribution.lineStyle='solid';settings.ellipseStyles.distribution.fillAlpha=.12;
+    settings.ellipseStyles.confidence.lineWidth=2;settings.ellipseStyles.confidence.lineStyle='dashed';settings.ellipseStyles.confidence.fillAlpha=0;
+  }else if(name==='high-visibility'){
+    settings.pointSize=5;settings.pointAlpha=.78;settings.meanSize=8;settings.gridAlpha=1;settings.gridColor='#cbd5e1';settings.gridLineWidth=1.5;settings.tickColor='#344054';settings.tickAlpha=1;settings.f1TickStep=200;settings.f2TickStep=500;settings.phonemeBadgeStyle='badge';
+    settings.ellipseStyles.distribution.lineWidth=2.5;settings.ellipseStyles.distribution.lineStyle='solid';settings.ellipseStyles.distribution.fillAlpha=.18;
+    settings.ellipseStyles.confidence.lineWidth=3;settings.ellipseStyles.confidence.lineStyle='dashed';settings.ellipseStyles.confidence.fillAlpha=0;
+  }else if(name==='simple'){
+    settings.pointSize=4;settings.pointAlpha=.58;settings.meanSize=7;settings.gridAlpha=.55;settings.gridColor='#e2e8f0';settings.gridLineWidth=1;settings.tickColor='#526071';settings.tickAlpha=.9;settings.f1TickStep=200;settings.f2TickStep=500;settings.phonemeBadgeStyle='text';
+    settings.ellipseStyles.distribution.lineWidth=1.5;settings.ellipseStyles.distribution.lineStyle='solid';settings.ellipseStyles.distribution.fillAlpha=0;
+    settings.ellipseStyles.confidence.lineWidth=1.5;settings.ellipseStyles.confidence.lineStyle='dashed';settings.ellipseStyles.confidence.fillAlpha=0;
+  }
+  if(markDirty)settingsDirty=true;
+  applyGraphStyleToUI();applyEllipseStylesToUI();updateEllipseStylePreviews();renderAll();
+  if(markDirty)syncSettingsIfSession();
+}
+function applyGraphStyleToUI(){
+  if($('graphStyle'))$('graphStyle').value=settings.graphStyle||'elegant';
+  if($('pointSize')){$('pointSize').value=settings.pointSize??3.5;$('pointSizeValue').textContent=String(settings.pointSize??3.5)}
+  if($('pointAlpha')){$('pointAlpha').value=settings.pointAlpha??.4;$('pointAlphaValue').textContent=Math.round((settings.pointAlpha??.4)*100)+'%'}
+  if($('meanSize')){$('meanSize').value=settings.meanSize??6.5;$('meanSizeValue').textContent=String(settings.meanSize??6.5)}if($('phonemeBadgeStyle'))$('phonemeBadgeStyle').value=settings.phonemeBadgeStyle||'badge';
+  if($('distributionFillAlpha')){$('distributionFillAlpha').value=settings.ellipseStyles?.distribution?.fillAlpha??.12;$('distributionFillAlphaValue').textContent=Math.round((settings.ellipseStyles?.distribution?.fillAlpha??.12)*100)+'%'}applyGridTickSettingsToUI();
+}
+function markGraphStyleCustom(){settings.graphStyle='custom';if($('graphStyle'))$('graphStyle').value='custom'}
+
+function applyPreset(name){
+  if(name==='stats'){
+    settings.preset='stats';
+    if(!settings.selectedVowels.length)settings.selectedVowels=[...GROUPS.ja];
+    settings.ellipseMode='confidence';
+  }else if(name!=='custom'){
+    settings.selectedVowels=[...PRESET[name]];
+    settings.preset=name;
+    settings.ellipseMode='distribution';
+  }else{
+    settings.preset='custom';
+  }
+  settingsDirty=true;
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));
+  document.querySelectorAll('[data-vowel]').forEach(cb=>cb.checked=settings.selectedVowels.includes(cb.dataset.vowel));
+  $('ellipseMode').value=settings.ellipseMode;
+  renderVowelColorSettings();renderAll();syncSettingsIfSession();
+}
+function addGroup(name){const add=GROUPS[name]||[];settings.selectedVowels=[...new Set([...settings.selectedVowels,...add])];setPresetCustom();settingsDirty=true;document.querySelectorAll('[data-vowel]').forEach(cb=>cb.checked=settings.selectedVowels.includes(cb.dataset.vowel));renderVowelColorSettings();renderAll();syncSettingsIfSession();}
+function setPresetCustom(){settings.preset='custom';document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.preset==='custom'));}
+function markCustomIfNeeded(){setPresetCustom();settings.selectedVowels=[...document.querySelectorAll('[data-vowel]:checked')].map(x=>x.dataset.vowel);}
+function readSelectedVowels(){settings.selectedVowels=[...document.querySelectorAll('[data-vowel]:checked')].map(x=>x.dataset.vowel);if(!settings.selectedVowels.length){settings.selectedVowels=['ja:a'];const cb=document.querySelector('[data-vowel="ja:a"]');if(cb)cb.checked=true;}}
+
+function resetDisplayStyle(){
+  settings.colorMode='vowel';
+  settings.languageShapes={ja:'circle',en:'square'};
+  settings.languageColors={ja:'#2563eb',en:'#dc2626'};
+  settings.vowelColors={...DEFAULT_COLORS};
+  settings.ellipseStyles={distribution:{colorMode:'linked',color:'#64748b',lineStyle:'solid',lineWidth:2,fillAlpha:.12},confidence:{colorMode:'linked',color:'#64748b',lineStyle:'dashed',lineWidth:2,fillAlpha:0}};
+  settings.phonemeFont='Yu Gothic, YuGothic, sans-serif';settings.phonemeFontSize=15;
+  settingsDirty=true;
+  applySettingsToUI();
+  renderAll();
+  syncSettingsIfSession();
+}
+function ensureEllipseStyles(){if(!settings.ellipseStyles)settings.ellipseStyles={};if(!settings.ellipseStyles.distribution)settings.ellipseStyles.distribution={colorMode:'linked',color:'#64748b',lineStyle:'solid',lineWidth:2};if(!settings.ellipseStyles.confidence)settings.ellipseStyles.confidence={colorMode:'linked',color:'#64748b',lineStyle:'dashed',lineWidth:2};}
+function applyEllipseStylesToUI(){ensureEllipseStyles();['distribution','confidence'].forEach(k=>{const x=settings.ellipseStyles[k];$(k+'ColorMode').value=x.colorMode||'linked';$(k+'Color').value=x.color||'#64748b';$(k+'Color').disabled=(x.colorMode||'linked')==='linked';$(k+'LineStyle').value=x.lineStyle||(k==='distribution'?'solid':'dashed');$(k+'LineWidth').value=x.lineWidth||2;});}
+function readEllipseStylesFromUI(){ensureEllipseStyles();['distribution','confidence'].forEach(k=>{settings.ellipseStyles[k]={colorMode:$(k+'ColorMode').value,color:$(k+'Color').value,lineStyle:$(k+'LineStyle').value,lineWidth:Math.max(1,Math.min(5,Number($(k+'LineWidth').value)||2)),fillAlpha:k==='distribution'?Math.max(0,Math.min(.3,Number($('distributionFillAlpha')?.value)||0)):0};$(k+'Color').disabled=settings.ellipseStyles[k].colorMode==='linked';});}
+function updateEllipseStylePreviews(){if($('distributionFillAlphaValue'))$('distributionFillAlphaValue').textContent=Math.round((settings.ellipseStyles?.distribution?.fillAlpha??.12)*100)+'%';ensureEllipseStyles();['distribution','confidence'].forEach(k=>{const x=settings.ellipseStyles[k],p=$(k+'LinePreview'),o=$(k+'LineWidthValue');if(o)o.textContent=(Number(x.lineWidth)||2)+' px';if(p){p.style.borderTopWidth=(Number(x.lineWidth)||2)+'px';p.style.borderTopStyle=x.lineStyle==='dashed'?'dashed':x.lineStyle==='dotted'?'dotted':'solid';p.style.borderTopColor=x.colorMode==='custom'?(x.color||'#475467'):'#475467';}});}
+function applySettingsToUI(){
+  hydrateCustomVowels();
+  if(!settings.graphStyle)settings.graphStyle='elegant';if(settings.pointSize==null)settings.pointSize=3.5;if(settings.pointAlpha==null)settings.pointAlpha=.4;if(settings.meanSize==null)settings.meanSize=6.5;if(!settings.phonemeBadgeStyle)settings.phonemeBadgeStyle='badge';if(settings.gridAlpha==null)settings.gridAlpha=1;if(!settings.gridColor)settings.gridColor='#e2e8f0';if(settings.gridLineWidth==null)settings.gridLineWidth=1;if(!settings.tickColor)settings.tickColor='#526071';if(settings.tickAlpha==null)settings.tickAlpha=1;if(!settings.f1TickStep)settings.f1TickStep=200;if(!settings.f2TickStep)settings.f2TickStep=500;ensureEllipseStyles();if(settings.ellipseStyles.distribution.fillAlpha==null)settings.ellipseStyles.distribution.fillAlpha=.12;if(!settings.valueLabelMode)settings.valueLabelMode='off';if(!settings.valueLabelFields)settings.valueLabelFields='both';if(!settings.connectMode)settings.connectMode='none';if(settings.referenceArrows==null)settings.referenceArrows=false;if(!settings.meanLineColor)settings.meanLineColor='#334155';if(!settings.meanLineStyle)settings.meanLineStyle='solid';if(!settings.meanLineWidth)settings.meanLineWidth=2;if(!settings.highlightLineColor)settings.highlightLineColor='#2563eb';if(!settings.highlightLineStyle)settings.highlightLineStyle='dashed';if(!settings.highlightLineWidth)settings.highlightLineWidth=2;if(!settings.referenceArrowColor)settings.referenceArrowColor='#64748b';if(!settings.referenceArrowStyle)settings.referenceArrowStyle='dotted';if(!settings.referenceArrowWidth)settings.referenceArrowWidth=1.5;if(!settings.meanMarkerFillMode)settings.meanMarkerFillMode='linked';if(!settings.meanMarkerFillColor)settings.meanMarkerFillColor='#334155';if(settings.meanMarkerOutline==null)settings.meanMarkerOutline=true;if(!settings.meanMarkerOutlineColor)settings.meanMarkerOutlineColor='#111827';if(!settings.meanMarkerOutlineWidth)settings.meanMarkerOutlineWidth=1.5;if(settings.polygonCompareEnabled==null)settings.polygonCompareEnabled=false;if(!settings.polygonSourceA)settings.polygonSourceA='visibleMean';if(!settings.polygonSourceB)settings.polygonSourceB='referenceMean';settings.polygonAStyle={...DEFAULT_SETTINGS.polygonAStyle,...(settings.polygonAStyle||{})};settings.polygonBStyle={...DEFAULT_SETTINGS.polygonBStyle,...(settings.polygonBStyle||{})};if(settings.polygonShowVertices==null)settings.polygonShowVertices=true;if(settings.polygonShowLabels==null)settings.polygonShowLabels=true;if(!settings.polygonVertexSize)settings.polygonVertexSize=5;if(settings.polygonConnectors==null)settings.polygonConnectors=false;if(!settings.polygonConnectorColor)settings.polygonConnectorColor='#94a3b8';if(!settings.polygonConnectorStyle)settings.polygonConnectorStyle='dotted';if(!settings.polygonConnectorWidth)settings.polygonConnectorWidth=1;
+  renderCustomVowelUI();
+
+  document.querySelectorAll('[data-vowel]').forEach(cb=>cb.checked=settings.selectedVowels.includes(cb.dataset.vowel));
+  $('colorMode').value=settings.colorMode;$('shapeJa').value=settings.languageShapes.ja;$('shapeEn').value=settings.languageShapes.en;$('langColorJa').value=settings.languageColors.ja;$('langColorEn').value=settings.languageColors.en;$('ellipseMode').value=settings.ellipseMode||'distribution';$('showPoints').checked=settings.showPoints!==false;$('showMean').checked=settings.showMean!==false;$('showLegend').checked=settings.showLegend!==false;$('showGrid').checked=settings.showGrid!==false;$('legendPosition').value=settings.legendPosition||'bottom-left';$('plotTitle').value=settings.plotTitle||'';$('titleFont').value=settings.titleFont||'Yu Gothic, YuGothic, sans-serif';$('titleFontSize').value=settings.titleFontSize||18;$('tickFont').value=settings.tickFont||'Yu Gothic, YuGothic, sans-serif';$('tickFontSize').value=settings.tickFontSize||12;$('unitFont').value=settings.unitFont||'Yu Gothic, YuGothic, sans-serif';$('unitFontSize').value=settings.unitFontSize||13;$('phonemeFont').value=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';$('phonemeFontSize').value=settings.phonemeFontSize||15;$('f1Min').value=settings.f1Min;$('f1Max').value=settings.f1Max;$('f2Min').value=settings.f2Min;$('f2Max').value=settings.f2Max;
+  applyComparisonSettingsToUI();document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===settings.preset));renderVowelColorSettings();applyEllipseStylesToUI();applyGraphStyleToUI();applyGridTickSettingsToUI();updateEllipseStylePreviews();
+}
+function readSettingsFromUI(){
+  readSelectedVowels();readComparisonSettingsFromUI();settings.colorMode=$('colorMode').value;settings.ellipseMode=$('ellipseMode').value;settings.languageShapes={ja:$('shapeJa').value,en:$('shapeEn').value};settings.languageColors={ja:$('langColorJa').value,en:$('langColorEn').value};settings.showPoints=$('showPoints').checked;settings.showMean=$('showMean').checked;settings.showLegend=$('showLegend').checked;settings.showGrid=$('showGrid').checked;settings.legendPosition=$('legendPosition').value;settings.plotTitle=$('plotTitle').value;settings.titleFont=$('titleFont').value;settings.titleFontSize=Math.max(10,Math.min(48,Number($('titleFontSize').value)||18));settings.tickFont=$('tickFont').value;settings.tickFontSize=Math.max(8,Math.min(32,Number($('tickFontSize').value)||12));settings.unitFont=$('unitFont').value;settings.unitFontSize=Math.max(8,Math.min(32,Number($('unitFontSize').value)||13));settings.phonemeFont=$('phonemeFont').value;settings.phonemeFontSize=Math.max(10,Math.min(32,Number($('phonemeFontSize').value)||15));const a=Number($('f1Min').value),b=Number($('f1Max').value),c=Number($('f2Min').value),d=Number($('f2Max').value);if(Number.isFinite(a)&&Number.isFinite(b)&&a<b){settings.f1Min=a;settings.f1Max=b}if(Number.isFinite(c)&&Number.isFinite(d)&&c<d){settings.f2Min=c;settings.f2Max=d}
+}
+function renderVowelColorSettings(){
+  const box=$('vowelColorSettings');box.innerHTML='';settings.selectedVowels.forEach(key=>{const v=VOWELS[key];if(!v)return;const row=document.createElement('div');row.className='row';row.style.margin='4px 0';row.innerHTML=`<span style="width:46px">${v.language==='ja'?'<span class="badge-ja">日</span>':'<span class="badge-en">英</span>'}</span><span style="width:58px;font-weight:700;font-family:${esc(settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif')};font-size:${settings.phonemeFontSize||15}px">${esc(v.label)}</span><input type="color" value="${settings.vowelColors[key]||DEFAULT_COLORS[key]||'#64748b'}" data-color-key="${esc(key)}">`;row.querySelector('input').addEventListener('input',e=>{settings.vowelColors[key]=e.target.value;settingsDirty=true;renderAll();});box.appendChild(row);});
+}
+function createSession(){
+  readSettingsFromUI();$('createSessionBtn').disabled=true;setStatus('teacherStatus','セッションを作成中…','info');
+  if(isDemo){setTimeout(()=>{currentSession='DEMO'+Math.floor(1000+Math.random()*9000);teacherToken='demo';recoveryKey=makeDemoRecoveryKey();settingsDirty=false;snapshot={data:[],participantCount:0,dataPointCount:0,sessionName:$('sessionName').value||'プレビュー授業',settings:deepClone(settings)};applySessionInfo({sessionId:currentSession,recoveryKey,studentUrl:`${location.href.split('?')[0]}?role=student&session=${currentSession}`});saveDemoSession();$('createSessionBtn').disabled=false;setStatus('teacherStatus','新しいプレビューセッションを作成しました。グラフは学生が送信するまで空です。','success');renderAll();},250);return;}
+  B1Backend.run.withSuccessHandler(meta=>{currentSession=meta.sessionId;teacherToken=meta.teacherToken;recoveryKey=meta.recoveryKey||'';rememberTeacherToken(currentSession,teacherToken);settings=normalizeSettings(meta.settings);settingsDirty=false;applySessionInfo(meta);history.replaceState(null,'',teacherHistoryUrl());$('createSessionBtn').disabled=false;setStatus('teacherStatus','セッションを作成しました。学生は参加URLを開くだけです。','success');markSyncSuccess();refreshSnapshot();}).withFailureHandler(err=>{$('createSessionBtn').disabled=false;setStatus('teacherStatus',err.message||String(err),'error');}).createSession($('sessionName').value,settings);
+}
+function applySessionInfo(meta){
+  $('sessionInfo').classList.remove('hidden');$('sessionCode').textContent=meta.sessionId||currentSession;$('recoveryKey').textContent=meta.recoveryKey||recoveryKey||'—';const url=meta.studentUrl||buildStudentUrl();$('studentUrl').textContent=url;$('qrcode').innerHTML='';if(url&&window.QRCode)new QRCode($('qrcode'),{text:url,width:146,height:146});else if(url)$('qrcode').innerHTML='<span class="tiny">QRコードを作成できませんでした。参加URLをご利用ください。</span>';
+}
+function copyRecoveryInfo(){const sid=$('sessionCode').textContent.trim(),key=$('recoveryKey').textContent.trim();if(!sid||!key||key==='—'){setStatus('teacherStatus','再開情報がありません。','warning');return;}const text=`F1–F2 Classroom\nセッションコード: ${sid}\n再開用キー: ${key}`;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>setStatus('teacherStatus','再開情報をコピーしました。','success')).catch(()=>setStatus('teacherStatus','コピーできませんでした。画面のコードを控えてください。','warning'));else setStatus('teacherStatus','画面のセッションコードと再開用キーを控えてください。','warning')}
+function makeDemoRecoveryKey(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let x='';for(let i=0;i<12;i++)x+=chars[Math.floor(Math.random()*chars.length)];return x}
+function saveDemoSession(){if(!isDemo||!currentSession)return;try{localStorage.setItem('b1-demo-session-'+currentSession,JSON.stringify({sessionId:currentSession,recoveryKey,sessionName:snapshot.sessionName||'',settings,snapshot}))}catch(_){}}
+function resumeSession(){const sid=$('resumeSessionId').value.trim(),key=$('resumeRecoveryKey').value.trim().toUpperCase();if(!sid||!key){setStatus('teacherStatus','セッションコードと再開用キーを入力してください。','warning');return;}$('resumeSessionBtn').disabled=true;setStatus('teacherStatus','セッションを再開しています…','info');if(isDemo){try{const raw=localStorage.getItem('b1-demo-session-'+sid);if(!raw)throw new Error('保存されたプレビューセッションが見つかりません。');const d=JSON.parse(raw);if(String(d.recoveryKey||'').toUpperCase()!==key)throw new Error('再開用キーが正しくありません。');currentSession=sid;teacherToken='demo';recoveryKey=d.recoveryKey;snapshot=d.snapshot;settings=normalizeSettings(d.settings||snapshot.settings);settingsDirty=false;applySettingsToUI();applySessionInfo({sessionId:sid,recoveryKey,studentUrl:`${location.href.split('?')[0]}?role=student&session=${sid}`});$('sessionName').value=snapshot.sessionName||'';$('resumeSessionBtn').disabled=false;setStatus('teacherStatus','プレビューセッションを再開しました。','success');renderAll();return;}catch(err){$('resumeSessionBtn').disabled=false;setStatus('teacherStatus',err.message||String(err),'error');return;}}B1Backend.run.withSuccessHandler(meta=>{currentSession=meta.sessionId;teacherToken=meta.teacherToken;recoveryKey=meta.recoveryKey||key;rememberTeacherToken(currentSession,teacherToken);settings=normalizeSettings(meta.settings);settingsDirty=false;applySettingsToUI();applySessionInfo(meta);$('sessionName').value=meta.sessionName||'';history.replaceState(null,'',teacherHistoryUrl());$('resumeSessionBtn').disabled=false;setStatus('teacherStatus','セッションを再開しました。','success');markSyncSuccess();refreshSnapshot();}).withFailureHandler(err=>{$('resumeSessionBtn').disabled=false;setStatus('teacherStatus',err.message||String(err),'error');}).resumeSession(sid,key)}
+
+function buildStudentUrl(){const base=location.href.split('?')[0];return `${base}?role=student&session=${encodeURIComponent(currentSession)}`}
+function copyStudentUrl(){const url=$('studentUrl').textContent;if(!url){setStatus('teacherStatus','参加URLがありません。','warning');return;}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>setStatus('teacherStatus','参加URLをコピーしました。','success')).catch(()=>setStatus('teacherStatus','コピーできませんでした。URL欄からコピーしてください。','warning'));}else setStatus('teacherStatus','このブラウザでは自動コピーできません。URL欄からコピーしてください。','warning')}
+function openStudentView(){window.open($('studentUrl').textContent||buildStudentUrl(),'_blank')}
+function saveSettings(){
+  readSettingsFromUI();if(!currentSession){setStatus('teacherStatus','先にセッションを作成してください。','warning');return;}if(isDemo){snapshot.settings=deepClone(settings);settingsDirty=false;saveDemoSession();setStatus('teacherStatus','プレビュー設定を反映しました。','success');buildStudentInputs();renderAll();return;}
+  $('saveSettingsBtn').disabled=true;B1Backend.run.withSuccessHandler(res=>{$('saveSettingsBtn').disabled=false;settings=normalizeSettings(res.settings);snapshot.settings=deepClone(settings);settingsDirty=false;markSyncSuccess(res.updatedAt);setStatus('teacherStatus','学生画面にもこの母音設定を反映しました。','success');renderAll();}).withFailureHandler(err=>{$('saveSettingsBtn').disabled=false;markSyncFailure();setStatus('teacherStatus',err.message||String(err),'error');}).updateSessionSettings(currentSession,teacherToken,settings);
+}
+function closeSession(){if(!currentSession){setStatus('teacherStatus','セッションがありません。','warning');return;}if(!confirm('このセッションを終了しますか？'))return;if(isDemo){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;setSyncStat('終了');setStatus('teacherStatus','プレビューセッションを終了しました。','success');return;}B1Backend.run.withSuccessHandler(()=>{if(pollTimer)clearTimeout(pollTimer);pollTimer=null;forgetTeacherToken(currentSession);setSyncStat('終了');setStatus('teacherStatus','セッションを終了しました。','success')}).withFailureHandler(err=>{markSyncFailure();setStatus('teacherStatus',err.message||String(err),'error')}).closeSession(currentSession,teacherToken)}
+function startPolling(){
+  if(pollTimer)clearTimeout(pollTimer);pollTimer=null;
+  if(isDemo||!currentSession)return;
+  const base=role==='student'?15000:2500;
+  const backoff=pollFailures?Math.min(4,Math.pow(2,pollFailures)):1;
+  const jitter=role==='student'?Math.round((Math.random()*4000)-2000):Math.round(Math.random()*700);
+  const delay=Math.max(1500,Math.round(base*backoff+jitter));
+  pollTimer=setTimeout(()=>{pollTimer=null;refreshSnapshot();},delay);
+}
+function refreshSnapshot(){
+  if(!currentSession){renderAll();return;}if(isDemo){if(role==='student'){try{const raw=localStorage.getItem('b1-demo-session-'+currentSession);if(raw){const d=JSON.parse(raw);snapshot=d.snapshot||snapshot;settings=normalizeSettings(d.settings||snapshot.settings);applySnapshot();}}catch(_){}}else renderAll();return;}
+  B1Backend.run.withSuccessHandler(s=>{snapshot=s;markSyncSuccess(s.serverTime);if(role==='teacher'&&s.teacherAuthorized===false){setSyncStat('要再開','warn');forgetTeacherToken(currentSession);teacherToken='';setStatus('teacherStatus','教師用の認証情報を確認できません。セッションコードと再開用キーから「セッションを再開」してください。','error');$('saveSettingsBtn').disabled=true;$('closeSessionBtn').disabled=true;}applySnapshot();}).withFailureHandler(err=>{markSyncFailure();startPolling();if(role==='student')setStatus('studentStatus',err.message||String(err),'error');else setStatus('teacherStatus',err.message||String(err),'error');}).getSessionSnapshot(currentSession,teacherToken||'',role==='student'?($('studentId')?.value.trim()||''):'');
+}
+function applySnapshot(){
+  if(role==='teacher'){if(!settingsDirty){settings=normalizeSettings(snapshot.settings);hydrateCustomVowels();applySettingsToUI();}applySessionInfo({sessionId:currentSession,studentUrl:snapshot.studentUrl||buildStudentUrl()});$('sessionName').value=snapshot.sessionName||'';}else{settings=normalizeSettings(snapshot.settings);hydrateCustomVowels();$('studentSessionCode').textContent=currentSession;$('studentJoinCode').value=currentSession;$('studentSessionName').textContent=snapshot.sessionName||'';buildStudentInputs();}renderAll();startPolling();
+}
+
+function joinStudentSession(auto=false){
+  const sid=String($('studentJoinCode').value||'').trim().toUpperCase();
+  if(!sid){setStatus('studentJoinStatus','授業コードを入力してください。','warning');return;}
+  currentSession=sid;$('studentJoinCode').value=sid;setStatus('studentJoinStatus','授業に接続しています…','info');
+  if(isDemo){
+    try{
+      const raw=localStorage.getItem('b1-demo-session-'+sid);
+      if(!raw)throw new Error('この授業コードのプレビューセッションが見つかりません。教師画面で新しいセッションを作成してください。');
+      const d=JSON.parse(raw);snapshot=d.snapshot||{data:[],participantCount:0,dataPointCount:0,sessionName:d.sessionName||'',settings:d.settings||settings};settings=normalizeSettings(d.settings||snapshot.settings);hydrateCustomVowels();snapshot.settings=deepClone(settings);applySnapshot();setStatus('studentJoinStatus','授業に参加しました。教師が選択した母音を入力できます。','success');history.replaceState(null,'',`?role=student&session=${encodeURIComponent(sid)}`);return;
+    }catch(err){setStatus('studentJoinStatus',err.message||String(err),'error');return;}
+  }
+  B1Backend.run.withSuccessHandler(s=>{snapshot=s;settings=normalizeSettings(s.settings);hydrateCustomVowels();markSyncSuccess(s.serverTime);applySnapshot();setStatus('studentJoinStatus','授業に参加しました。教師が選択した母音を入力できます。','success');history.replaceState(null,'',`?role=student&session=${encodeURIComponent(sid)}`);}).withFailureHandler(err=>{markSyncFailure();setStatus('studentJoinStatus',err.message||String(err),'error')}).getSessionSnapshot(sid,'',$('studentId')?.value.trim()||'');
+}
+
+function buildStudentInputs(){
+  const box=$('studentInputs');if(!box)return;const draft={};box.querySelectorAll('input[data-key][data-kind]').forEach(i=>{draft[i.dataset.key]||(draft[i.dataset.key]={});draft[i.dataset.key][i.dataset.kind]=i.value;});box.innerHTML='<div></div><div class="head">F1 (Hz)</div><div class="head">F2 (Hz)</div>';
+  settings.selectedVowels.forEach(key=>{const v=VOWELS[key];if(!v)return;const name=document.createElement('div');name.className='vowel-name';name.style.fontFamily=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';name.style.fontSize=(settings.phonemeFontSize||15)+'px';name.innerHTML=`${v.language==='ja'?'<span class="badge-ja">日</span>':'<span class="badge-en">英</span>'}<br>${esc(v.label)}`;const i1=document.createElement('input');i1.type='number';i1.placeholder='F1';i1.min='100';i1.max='2500';i1.dataset.key=key;i1.dataset.kind='f1';i1.value=draft[key]?.f1||'';const i2=document.createElement('input');i2.type='number';i2.placeholder='F2';i2.min='200';i2.max='6000';i2.dataset.key=key;i2.dataset.kind='f2';i2.value=draft[key]?.f2||'';[i1,i2].forEach(x=>x.addEventListener('input',renderAll));box.append(name,i1,i2);});
+}
+function getDraftRecords(){
+  const out=[];settings.selectedVowels.forEach(key=>{const i1=document.querySelector(`[data-key="${CSS.escape(key)}"][data-kind="f1"]`);const i2=document.querySelector(`[data-key="${CSS.escape(key)}"][data-kind="f2"]`);if(i1&&i2&&i1.value!==''&&i2.value!==''){const v=VOWELS[key];out.push({vowelKey:key,language:v.language,vowel:v.label,f1:Number(i1.value),f2:Number(i2.value)});}});return out;
+}
+function submitStudent(){
+  if(!currentSession){setStatus('studentStatus','先に授業コードを入力して参加してください。','warning');return;}
+  const id=$('studentId').value.trim();const records=getDraftRecords();if(!id){setStatus('studentStatus','IDを入力してください。','warning');return;}if(!records.length){setStatus('studentStatus','F1/F2を1組以上入力してください。','warning');return;}const bad=records.find(r=>r.f1<100||r.f1>2500||r.f2<200||r.f2>6000);if(bad){setStatus('studentStatus',`${bad.vowel} の値を確認してください（F1: 100–2500 Hz、F2: 200–6000 Hz）。`,'warning');return;}
+  $('submitBtn').disabled=true;if(isDemo){const updatedKeys=new Set(records.map(r=>r.vowelKey));snapshot.data=snapshot.data.filter(x=>!(x.participantId===id&&updatedKeys.has(x.vowelKey)));records.forEach(r=>snapshot.data.push({...r,participantId:id,sex:$('studentSex').value,timestamp:new Date().toISOString()}));snapshot.participantCount=[...new Set(snapshot.data.map(x=>x.participantId))].length;snapshot.dataPointCount=snapshot.data.length;saveDemoSession();$('submitBtn').disabled=false;setStatus('studentStatus','プレビューに反映しました。★が自分のデータです。','success');renderAll();return;}
+  B1Backend.run.withSuccessHandler(res=>{$('submitBtn').disabled=false;markSyncSuccess(res.serverTime);setStatus('studentStatus',`${res.saved}件を送信しました。`,'success');refreshSnapshot();}).withFailureHandler(err=>{$('submitBtn').disabled=false;markSyncFailure();setStatus('studentStatus',err.message||String(err),'error');}).submitStudentData(currentSession,id,$('studentSex').value,records);
+}
+
+
+function hydrateCustomVowels(){
+  const cv=settings.customVowels&&typeof settings.customVowels==='object'?settings.customVowels:{};settings.customVowels=cv;VOWELS={...BASE_VOWELS,...cv};
+}
+function normalizePhonemeLabel(raw){let x=String(raw||'').trim();if(!x)return'';if(!x.startsWith('/'))x='/'+x;if(!x.endsWith('/'))x=x+'/';return x;}
+function renderCustomVowelUI(){
+  hydrateCustomVowels();const chips=$('customChips'),list=$('customVowelList');if(chips)chips.innerHTML='';if(list)list.innerHTML='';
+  Object.entries(settings.customVowels||{}).forEach(([key,v])=>{
+    if(chips){const lab=document.createElement('label');lab.className='chip';lab.innerHTML=`<input type="checkbox" data-vowel="${esc(key)}"><span class="${v.language==='ja'?'lang-ja':'lang-en'}">${esc(v.label)}</span>`;const cb=lab.querySelector('input');cb.checked=(settings.selectedVowels||[]).includes(key);cb.addEventListener('change',()=>{readSelectedVowels();setPresetCustom();settingsDirty=true;renderVowelColorSettings();renderAll();syncSettingsIfSession();});chips.appendChild(lab);}
+    if(list){const row=document.createElement('div');row.className='custom-vowel-item';row.innerHTML=`<span class="${v.language==='ja'?'badge-ja':'badge-en'}">${v.language==='ja'?'日':'英'}</span><div class="meta"><b>${esc(v.label)}</b><div class="example">${esc(v.example||'例語なし')}</div></div><button type="button" class="small danger" data-remove-custom="${esc(key)}">削除</button>`;row.querySelector('button').addEventListener('click',()=>removeCustomVowel(key));list.appendChild(row);}
+  });
+}
+function addCustomVowelFromUI(){
+  const language=$('customVowelLanguage').value,label=normalizePhonemeLabel($('customVowelLabel').value),example=$('customVowelExample').value.trim();if(!label){setStatus('teacherStatus','追加する音素を入力してください。','warning');return;}
+  const existing=Object.entries(VOWELS).find(([k,v])=>v.language===language&&v.label===label);if(existing){if(!settings.selectedVowels.includes(existing[0]))settings.selectedVowels.push(existing[0]);setPresetCustom();buildChips();applySettingsToUI();renderAll();setStatus('teacherStatus',`${label} は既にあります。選択対象に追加しました。`,'info');return;}
+  const key=`custom:${language}:${Date.now().toString(36)}`;settings.customVowels[key]={language,label,group:'custom',example};settings.vowelColors[key]=language==='ja'?'#0f766e':'#b45309';settings.selectedVowels.push(key);hydrateCustomVowels();setPresetCustom();settingsDirty=true;$('customVowelLabel').value='';$('customVowelExample').value='';buildChips();applySettingsToUI();renderAll();syncSettingsIfSession();
+}
+function removeCustomVowel(key){if(!settings.customVowels?.[key])return;delete settings.customVowels[key];delete settings.vowelColors[key];settings.selectedVowels=settings.selectedVowels.filter(k=>k!==key);if(!settings.selectedVowels.length)settings.selectedVowels=['ja:a'];hydrateCustomVowels();setPresetCustom();settingsDirty=true;buildChips();applySettingsToUI();renderAll();syncSettingsIfSession();}
+const CUSTOM_SET_STORAGE='b1-f1f2-custom-sets-v1';
+function readCustomSets(){try{return JSON.parse(localStorage.getItem(CUSTOM_SET_STORAGE)||'[]')}catch(_){return[]}}
+function writeCustomSets(x){try{localStorage.setItem(CUSTOM_SET_STORAGE,JSON.stringify(x));return true}catch(_){return false}}
+function renderSavedSetOptions(){const sel=$('savedSetSelect');if(!sel)return;const cur=sel.value;sel.innerHTML='<option value="">保存済みセット</option>';readCustomSets().forEach((x,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=x.name;sel.appendChild(o)});if([...sel.options].some(o=>o.value===cur))sel.value=cur;}
+function saveCurrentCustomSet(){const name=$('customSetName').value.trim();if(!name){setStatus('teacherStatus','セット名を入力してください。','warning');return;}const sets=readCustomSets();const item={name,selectedVowels:[...(settings.selectedVowels||[])],customVowels:deepClone(settings.customVowels||{}),savedAt:new Date().toISOString()};const i=sets.findIndex(x=>x.name===name);if(i>=0)sets[i]=item;else sets.push(item);if(!writeCustomSets(sets)){setStatus('teacherStatus','このブラウザにセットを保存できませんでした。','warning');return;}renderSavedSetOptions();$('savedSetSelect').value=String(i>=0?i:sets.length-1);setStatus('teacherStatus',`「${name}」をこのブラウザに保存しました。`,'success');}
+function loadSelectedCustomSet(){const i=Number($('savedSetSelect').value);const sets=readCustomSets();if(!Number.isInteger(i)||!sets[i]){setStatus('teacherStatus','読み込むセットを選んでください。','warning');return;}const x=sets[i];settings.customVowels={...(settings.customVowels||{}),...(x.customVowels||{})};hydrateCustomVowels();settings.selectedVowels=(x.selectedVowels||[]).filter(k=>VOWELS[k]);if(!settings.selectedVowels.length)settings.selectedVowels=['ja:a'];setPresetCustom();settingsDirty=true;buildChips();applySettingsToUI();renderAll();syncSettingsIfSession();setStatus('teacherStatus',`「${x.name}」を読み込みました。`,'success');}
+function deleteSelectedCustomSet(){const i=Number($('savedSetSelect').value);const sets=readCustomSets();if(!Number.isInteger(i)||!sets[i]){setStatus('teacherStatus','削除するセットを選んでください。','warning');return;}const name=sets[i].name;sets.splice(i,1);writeCustomSets(sets);renderSavedSetOptions();setStatus('teacherStatus',`「${name}」を削除しました。`,'success');}
+function applyComparisonSettingsToUI(){if(!$('valueLabelMode'))return;
+  $('valueLabelMode').value=settings.valueLabelMode||'off';$('valueLabelFields').value=settings.valueLabelFields||'both';$('connectMode').value=settings.connectMode||'none';$('referenceArrows').checked=!!settings.referenceArrows;
+  $('meanLineColor').value=settings.meanLineColor||'#334155';$('meanLineStyle').value=settings.meanLineStyle||'solid';$('meanLineWidth').value=settings.meanLineWidth||2;
+  $('highlightLineColor').value=settings.highlightLineColor||'#2563eb';$('highlightLineStyle').value=settings.highlightLineStyle||'dashed';$('highlightLineWidth').value=settings.highlightLineWidth||2;
+  $('referenceArrowColor').value=settings.referenceArrowColor||'#64748b';$('referenceArrowStyle').value=settings.referenceArrowStyle||'dotted';$('referenceArrowWidth').value=settings.referenceArrowWidth||1.5;
+  $('meanMarkerFillMode').value=settings.meanMarkerFillMode||'linked';$('meanMarkerFillColor').value=settings.meanMarkerFillColor||'#334155';$('meanMarkerFillColor').disabled=(settings.meanMarkerFillMode||'linked')==='linked';$('meanMarkerOutline').checked=settings.meanMarkerOutline!==false;$('meanMarkerOutlineColor').value=settings.meanMarkerOutlineColor||'#111827';$('meanMarkerOutlineWidth').value=settings.meanMarkerOutlineWidth||1.5;$('meanMarkerOutlineColor').disabled=settings.meanMarkerOutline===false;$('meanMarkerOutlineWidth').disabled=settings.meanMarkerOutline===false;
+  $('polygonCompareEnabled').checked=!!settings.polygonCompareEnabled;$('polygonSourceA').value=settings.polygonSourceA||'visibleMean';$('polygonSourceB').value=settings.polygonSourceB||'referenceMean';$('polygonConnectors').checked=!!settings.polygonConnectors;
+  const a=settings.polygonAStyle||DEFAULT_SETTINGS.polygonAStyle,b=settings.polygonBStyle||DEFAULT_SETTINGS.polygonBStyle;$('polygonAColor').value=a.color||'#2563eb';$('polygonALineStyle').value=a.lineStyle||'solid';$('polygonALineWidth').value=a.lineWidth||2.5;$('polygonAFillAlpha').value=a.fillAlpha??.10;$('polygonAFillAlphaValue').textContent=Math.round(Number(a.fillAlpha??.10)*100)+'%';$('polygonBColor').value=b.color||'#dc2626';$('polygonBLineStyle').value=b.lineStyle||'dashed';$('polygonBLineWidth').value=b.lineWidth||2.5;$('polygonBFillAlpha').value=b.fillAlpha??.10;$('polygonBFillAlphaValue').textContent=Math.round(Number(b.fillAlpha??.10)*100)+'%';
+  $('polygonShowVertices').checked=settings.polygonShowVertices!==false;$('polygonShowLabels').checked=settings.polygonShowLabels!==false;$('polygonVertexSize').value=settings.polygonVertexSize||5;$('polygonConnectorColor').value=settings.polygonConnectorColor||'#94a3b8';$('polygonConnectorStyle').value=settings.polygonConnectorStyle||'dotted';$('polygonConnectorWidth').value=settings.polygonConnectorWidth||1;
+}
+function readComparisonSettingsFromUI(){settings.valueLabelMode=$('valueLabelMode').value;settings.valueLabelFields=$('valueLabelFields').value;settings.connectMode=$('connectMode').value;settings.referenceArrows=$('referenceArrows').checked;
+  settings.meanLineColor=$('meanLineColor').value;settings.meanLineStyle=$('meanLineStyle').value;settings.meanLineWidth=Math.max(.5,Math.min(6,Number($('meanLineWidth').value)||2));
+  settings.highlightLineColor=$('highlightLineColor').value;settings.highlightLineStyle=$('highlightLineStyle').value;settings.highlightLineWidth=Math.max(.5,Math.min(6,Number($('highlightLineWidth').value)||2));
+  settings.referenceArrowColor=$('referenceArrowColor').value;settings.referenceArrowStyle=$('referenceArrowStyle').value;settings.referenceArrowWidth=Math.max(.5,Math.min(6,Number($('referenceArrowWidth').value)||1.5));
+  settings.meanMarkerFillMode=$('meanMarkerFillMode').value;settings.meanMarkerFillColor=$('meanMarkerFillColor').value;settings.meanMarkerOutline=$('meanMarkerOutline').checked;settings.meanMarkerOutlineColor=$('meanMarkerOutlineColor').value;settings.meanMarkerOutlineWidth=Math.max(.5,Math.min(6,Number($('meanMarkerOutlineWidth').value)||1.5));$('meanMarkerFillColor').disabled=settings.meanMarkerFillMode==='linked';$('meanMarkerOutlineColor').disabled=!settings.meanMarkerOutline;$('meanMarkerOutlineWidth').disabled=!settings.meanMarkerOutline;
+  settings.polygonCompareEnabled=$('polygonCompareEnabled').checked;settings.polygonSourceA=$('polygonSourceA').value;settings.polygonSourceB=$('polygonSourceB').value;settings.polygonConnectors=$('polygonConnectors').checked;
+  settings.polygonAStyle={color:$('polygonAColor').value,lineStyle:$('polygonALineStyle').value,lineWidth:Math.max(.5,Math.min(6,Number($('polygonALineWidth').value)||2.5)),fillAlpha:Math.max(0,Math.min(.35,Number($('polygonAFillAlpha').value)||0))};
+  settings.polygonBStyle={color:$('polygonBColor').value,lineStyle:$('polygonBLineStyle').value,lineWidth:Math.max(.5,Math.min(6,Number($('polygonBLineWidth').value)||2.5)),fillAlpha:Math.max(0,Math.min(.35,Number($('polygonBFillAlpha').value)||0))};
+  settings.polygonShowVertices=$('polygonShowVertices').checked;settings.polygonShowLabels=$('polygonShowLabels').checked;settings.polygonVertexSize=Math.max(2,Math.min(10,Number($('polygonVertexSize').value)||5));settings.polygonConnectorColor=$('polygonConnectorColor').value;settings.polygonConnectorStyle=$('polygonConnectorStyle').value;settings.polygonConnectorWidth=Math.max(.5,Math.min(4,Number($('polygonConnectorWidth').value)||1));$('polygonAFillAlphaValue').textContent=Math.round(settings.polygonAStyle.fillAlpha*100)+'%';$('polygonBFillAlphaValue').textContent=Math.round(settings.polygonBStyle.fillAlpha*100)+'%';}
+function valueLabelText(f1,f2){const mode=settings.valueLabelFields||'both';if(mode==='f1')return`F1 ${Math.round(Number(f1))}`;if(mode==='f2')return`F2 ${Math.round(Number(f2))}`;return`${Math.round(Number(f1))} / ${Math.round(Number(f2))}`;}
+function drawSmallValueLabel(c,x,y,text,color='#344054'){c.save();c.font=`600 10px ${settings.tickFont||'Yu Gothic, YuGothic, sans-serif'}`;const w=c.measureText(text).width+8,h=17;c.fillStyle='rgba(255,255,255,.88)';c.strokeStyle='rgba(148,163,184,.55)';c.lineWidth=.7;c.beginPath();c.roundRect(x+7,y+5,w,h,4);c.fill();c.stroke();c.fillStyle=color;c.textAlign='left';c.textBaseline='middle';c.fillText(text,x+11,y+13.5);c.restore();}
+function drawPointValueLabels(c,points,groups,highlightId,X,Y,L,R,T,B){const mode=settings.valueLabelMode||'off';if(mode==='off')return;if(mode==='mean'){Object.entries(groups).forEach(([key,arr])=>{const m=mean(arr);if(!m)return;const x=X(m.f2),y=Y(m.f1);if(x>=L&&x<=R&&y>=T&&y<=B)drawSmallValueLabel(c,x,y+8,valueLabelText(m.f1,m.f2),getColor(key));});return;}const list=mode==='highlight'?(highlightId?points.filter(p=>p.participantId===highlightId):[]):points;list.forEach(p=>{const x=X(Number(p.f2)),y=Y(Number(p.f1));if(x>=L&&x<=R&&y>=T&&y<=B)drawSmallValueLabel(c,x,y,valueLabelText(p.f1,p.f2),getColor(p.vowelKey));});}
+function lineDashForStyle(style){return style==='dashed'?[7,5]:style==='dotted'?[2,4]:[];}
+function drawPolyline(c,arr,color,width,lineStyle,alpha=.82){if(arr.length<2)return;c.save();c.strokeStyle=color;c.lineWidth=width;c.globalAlpha=alpha;c.setLineDash(lineDashForStyle(lineStyle));c.beginPath();arr.forEach((p,i)=>{if(i)c.lineTo(p.x,p.y);else c.moveTo(p.x,p.y)});if(arr.length>=3)c.closePath();c.stroke();c.restore();}
+function drawArrow(c,a,b,color,width,lineStyle='dotted'){const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);if(len<5)return;const ux=dx/len,uy=dy/len,ex=b.x-ux*7,ey=b.y-uy*7;c.save();c.strokeStyle=color;c.fillStyle=color;c.lineWidth=width;c.globalAlpha=.75;c.setLineDash(lineDashForStyle(lineStyle));c.beginPath();c.moveTo(a.x,a.y);c.lineTo(ex,ey);c.stroke();c.setLineDash([]);const ang=Math.atan2(dy,dx),r=7;c.beginPath();c.moveTo(b.x,b.y);c.lineTo(b.x-Math.cos(ang-.5)*r,b.y-Math.sin(ang-.5)*r);c.lineTo(b.x-Math.cos(ang+.5)*r,b.y-Math.sin(ang+.5)*r);c.closePath();c.fill();c.restore();}
+function selectedSourceRecords(source,visiblePoints,highlightId){const keys=settings.selectedVowels||[],all=(snapshot.data||[]).filter(p=>keys.includes(p.vowelKey)&&Number.isFinite(Number(p.f1))&&Number.isFinite(Number(p.f2)));if(source==='visibleMean')return visiblePoints;if(source==='classMean')return all;if(source==='maleMean')return all.filter(p=>p.sex==='male');if(source==='femaleMean')return all.filter(p=>p.sex==='female');if(source==='noanswerMean')return all.filter(p=>p.sex==='noanswer'||p.sex==='unspecified'||!p.sex);if(source==='highlight')return highlightId?all.filter(p=>p.participantId===highlightId):[];if(source==='referenceMean')return referenceData.filter(p=>keys.includes(p.vowelKey));return[];}
+function polygonSourceMap(source,visiblePoints,highlightId){const records=selectedSourceRecords(source,visiblePoints,highlightId),by=groupByKey(records),out={};(settings.selectedVowels||[]).forEach(k=>{const m=mean(by[k]||[]);if(m)out[k]={key:k,f1:m.f1,f2:m.f2,n:(by[k]||[]).length};});return out;}
+function drawPolygonShape(c,seq,style){if(seq.length<2)return;c.save();c.lineWidth=Number(style.lineWidth)||2;c.strokeStyle=style.color||'#2563eb';c.setLineDash(lineDashForStyle(style.lineStyle||'solid'));if(seq.length>=3&&(Number(style.fillAlpha)||0)>0){c.beginPath();seq.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();c.fillStyle=style.color||'#2563eb';c.globalAlpha=Math.max(0,Math.min(.35,Number(style.fillAlpha)||0));c.fill();}c.globalAlpha=.92;c.beginPath();seq.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));if(seq.length>=3)c.closePath();c.stroke();c.restore();}
+function drawPolygonVertex(c,p,color,size){c.save();c.beginPath();c.arc(p.x,p.y,size,0,Math.PI*2);c.fillStyle=color;c.globalAlpha=.95;c.fill();c.lineWidth=1.3;c.strokeStyle='#fff';c.stroke();c.restore();}
+function drawPolygonLabel(c,p,label){const fontSize=Math.max(10,Number(settings.phonemeFontSize||15)-2),font=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';c.save();c.font=`700 ${fontSize}px ${font}`;const w=c.measureText(label).width+8,h=fontSize+6,x=p.x+8,y=p.y-8-h;c.fillStyle='#fff';c.globalAlpha=.88;c.fillRect(x,y,w,h);c.globalAlpha=1;c.fillStyle='#334155';c.textAlign='left';c.textBaseline='middle';c.fillText(label,x+4,y+h/2);c.restore();}
+function polygonSourceLabel(source){return({visibleMean:'表示中の平均',classMean:'クラス全体平均',maleMean:'男性平均',femaleMean:'女性平均',noanswerMean:'回答しない平均',highlight:'強調ID',referenceMean:'参照データ平均'})[source]||source;}
+function drawPolygonComparison(c,visiblePoints,highlightId,X,Y,L,R,T,B){if(!settings.polygonCompareEnabled)return;const inside=p=>p&&p.x>=L&&p.x<=R&&p.y>=T&&p.y<=B,keys=settings.selectedVowels||[],aMap=polygonSourceMap(settings.polygonSourceA,visiblePoints,highlightId),bMap=polygonSourceMap(settings.polygonSourceB,visiblePoints,highlightId),toSeq=map=>keys.map(k=>map[k]?{...map[k],x:X(map[k].f2),y:Y(map[k].f1)}:null).filter(inside),a=toSeq(aMap),b=toSeq(bMap),aStyle=settings.polygonAStyle||DEFAULT_SETTINGS.polygonAStyle,bStyle=settings.polygonBStyle||DEFAULT_SETTINGS.polygonBStyle;if(settings.polygonConnectors){c.save();c.strokeStyle=settings.polygonConnectorColor||'#94a3b8';c.lineWidth=Number(settings.polygonConnectorWidth)||1;c.globalAlpha=.65;c.setLineDash(lineDashForStyle(settings.polygonConnectorStyle||'dotted'));keys.forEach(k=>{const x=aMap[k],y=bMap[k];if(!x||!y)return;const p={x:X(x.f2),y:Y(x.f1)},q={x:X(y.f2),y:Y(y.f1)};if(!inside(p)||!inside(q))return;c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.stroke();});c.restore();}drawPolygonShape(c,a,aStyle);drawPolygonShape(c,b,bStyle);if(settings.polygonShowVertices!==false){a.forEach(p=>drawPolygonVertex(c,p,aStyle.color||'#2563eb',Number(settings.polygonVertexSize)||5));b.forEach(p=>drawPolygonVertex(c,p,bStyle.color||'#dc2626',Number(settings.polygonVertexSize)||5));}if(settings.polygonShowLabels!==false){const labelMap={};keys.forEach(k=>{const p=aMap[k]||bMap[k];if(!p)return;const q={x:X(p.f2),y:Y(p.f1)};if(inside(q))labelMap[k]=q;});Object.entries(labelMap).forEach(([k,p])=>drawPolygonLabel(c,p,VOWELS[k]?.label||k));}const status=$('polygonCompareStatus');if(status){const common=keys.filter(k=>aMap[k]&&bMap[k]).length;status.textContent=`${polygonSourceLabel(settings.polygonSourceA)}：${a.length}頂点 ／ ${polygonSourceLabel(settings.polygonSourceB)}：${b.length}頂点 ／ 共通 ${common}母音`;}}
+function drawComparisonLines(c,groups,points,highlightId,X,Y,L,R,T,B,opts){const mode=settings.connectMode||'none',keys=settings.selectedVowels||[];const inside=p=>p&&p.x>=L&&p.x<=R&&p.y>=T&&p.y<=B;if((mode==='mean'||mode==='both')&&opts.showMean!==false){const seq=keys.map(k=>{const m=mean(groups[k]||[]);return m?{x:X(m.f2),y:Y(m.f1),key:k}:null}).filter(inside);drawPolyline(c,seq,settings.meanLineColor||'#334155',Number(settings.meanLineWidth)||2,settings.meanLineStyle||'solid');}if((mode==='highlight'||mode==='both')&&highlightId&&opts.showPoints!==false){const by={};points.filter(p=>p.participantId===highlightId).forEach(p=>by[p.vowelKey]=p);const seq=keys.map(k=>by[k]?{x:X(Number(by[k].f2)),y:Y(Number(by[k].f1)),key:k}:null).filter(inside);drawPolyline(c,seq,settings.highlightLineColor||'#2563eb',Number(settings.highlightLineWidth)||2,settings.highlightLineStyle||'dashed');}if(settings.referenceArrows&&opts.showReference&&referenceData.length){const rg=groupByKey(referenceData.filter(p=>keys.includes(p.vowelKey)));const own={};if(highlightId)points.filter(p=>p.participantId===highlightId).forEach(p=>own[p.vowelKey]=p);keys.forEach(k=>{const target=mean(rg[k]||[]);if(!target)return;let src=own[k]||mean(groups[k]||[]);if(!src)return;const a={x:X(Number(src.f2)),y:Y(Number(src.f1))},b={x:X(Number(target.f2)),y:Y(Number(target.f1))};if(inside(a)&&inside(b))drawArrow(c,a,b,settings.referenceArrowColor||'#64748b',Number(settings.referenceArrowWidth)||1.5,settings.referenceArrowStyle||'dotted');});}}
+function ellipseStats(arr,mode){const k=ellipseScale95(mode,arr.length);if(!k||arr.length<2)return null;const m=mean(arr);let s11=0,s22=0,s12=0;arr.forEach(p=>{const x=Number(p.f2)-m.f2,y=Number(p.f1)-m.f1;s11+=x*x;s22+=y*y;s12+=x*y});const d=arr.length-1;s11/=d;s22/=d;s12/=d;const det=s11*s22-s12*s12;if(!(det>1e-12))return null;const i11=s22/det,i12=-s12/det,i22=s11/det;const A=i11,B=2*i12,C=i22,D=-2*i11*m.f2-2*i12*m.f1,E=-2*i22*m.f1-2*i12*m.f2,F=i11*m.f2*m.f2+2*i12*m.f2*m.f1+i22*m.f1*m.f1-k*k;return{A,B,C,D,E,F,m,k,n:arr.length};}
+function fmtCoeff(x){if(!Number.isFinite(x))return'—';const a=Math.abs(x);if(a===0)return'0';if(a>=1e4||a<1e-4)return x.toExponential(6);return Number(x.toPrecision(7)).toString();}
+function equationText(st){return`${fmtCoeff(st.A)} x² ${st.B<0?'−':'+'} ${fmtCoeff(Math.abs(st.B))} xy ${st.C<0?'−':'+'} ${fmtCoeff(Math.abs(st.C))} y² ${st.D<0?'−':'+'} ${fmtCoeff(Math.abs(st.D))} x ${st.E<0?'−':'+'} ${fmtCoeff(Math.abs(st.E))} y ${st.F<0?'−':'+'} ${fmtCoeff(Math.abs(st.F))} = 0`;}
+function visibleEllipseModes(){return settings.ellipseMode==='both'?['distribution','confidence']:settings.ellipseMode==='distribution'?['distribution']:settings.ellipseMode==='confidence'?['confidence']:[];}
+function buildEllipseEquationItems(){const groups=groupByKey(filteredData()),out=[];visibleEllipseModes().forEach(mode=>(settings.selectedVowels||[]).forEach(key=>{const arr=groups[key]||[],st=ellipseStats(arr,mode);if(st)out.push({mode,key,label:VOWELS[key]?.label||key,st,text:equationText(st)})}));return out;}
+function openEllipseEquationDialog(){const d=$('ellipseEquationDialog'),box=$('ellipseEquationList');box.innerHTML='';const items=buildEllipseEquationItems();if(!visibleEllipseModes().length)box.innerHTML='<div class="notice info">現在は楕円を表示していません。楕円モードを選ぶと式を表示できます。</div>';else if(!items.length)box.innerHTML='<div class="notice info">式を求められる楕円がありません。各音素で n≥5 かつ共分散行列が正則である必要があります。</div>';else items.forEach(x=>{const card=document.createElement('div');card.className='equation-card';card.innerHTML=`<b>${esc(x.label)} — ${x.mode==='distribution'?'95%分布楕円':'95%信頼楕円'}</b><div class="tiny">n=${x.st.n}　中心：F2=${Math.round(x.st.m.f2)} Hz, F1=${Math.round(x.st.m.f1)} Hz</div><div class="equation-formula">${esc(x.text)}</div>`;box.appendChild(card)});d.classList.remove('hidden');d.style.display='flex';document.body.style.overflow='hidden';}
+function closeEllipseEquationDialog(){const d=$('ellipseEquationDialog');d.classList.add('hidden');d.style.display='none';document.body.style.overflow='';}
+function copyEllipseEquations(){const items=buildEllipseEquationItems();if(!items.length){setStatus('teacherStatus','コピーできる楕円式がありません。','warning');return;}const text=['F1–F2 Classroom 楕円式','x = F2 (Hz), y = F1 (Hz)',...items.map(x=>`${x.label} ${x.mode==='distribution'?'95%分布楕円':'95%信頼楕円'} (n=${x.st.n})\n${x.text}`)].join('\n\n');copyPlainText(text,'楕円式をコピーしました。');}
+function copyPlainText(text,msg){if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>setStatus('teacherStatus',msg,'success')).catch(()=>setStatus('teacherStatus','コピーできませんでした。','warning'));else setStatus('teacherStatus','このブラウザでは自動コピーできません。','warning');}
+function exportChartOpts(background,pixelRatio){return{showPoints:settings.showPoints,showMean:settings.showMean,ellipseMode:settings.ellipseMode,showReference:$('showReference').checked,showLegend:settings.showLegend,showGrid:settings.showGrid,legendPosition:settings.legendPosition,plotTitle:settings.plotTitle,background,pixelRatio};}
+function makeExportCanvas(scale){const src=$('teacherCanvas').getBoundingClientRect(),cv=document.createElement('canvas');cv.style.position='fixed';cv.style.left='-10000px';cv.style.top='0';cv.style.width=Math.max(640,Math.round(src.width))+'px';cv.style.height=Math.max(420,Math.round(src.height))+'px';document.body.appendChild(cv);drawChart(cv,filteredData(),$('highlightId').value.trim(),exportChartOpts($('exportBackground').value,scale));return cv;}
+function exportPng(){const scale=Number($('exportScale').value)||3,cv=makeExportCanvas(scale);cv.toBlob(blob=>{cv.remove();if(!blob){setStatus('teacherStatus','PNGを作成できませんでした。','error');return;}downloadBlob(blob,`F1F2_${currentSession||'classroom'}_${scale}x.png`);setStatus('teacherStatus','高解像度PNGを保存しました。','success');},'image/png');}
+function copyChartToClipboard(){const cv=makeExportCanvas(2);cv.toBlob(async blob=>{cv.remove();if(!blob)return setStatus('teacherStatus','図を作成できませんでした。','error');try{if(!navigator.clipboard?.write||typeof ClipboardItem==='undefined')throw new Error('unsupported');await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);setStatus('teacherStatus','図をクリップボードにコピーしました。','success');}catch(_){setStatus('teacherStatus','このブラウザ／接続方法では画像コピーを利用できません。PNG保存をご利用ください。','warning');}},'image/png');}
+class SvgContext{
+  constructor(w,h){this.w=w;this.h=h;this.parts=[];this.fillStyle='#000';this.strokeStyle='#000';this.lineWidth=1;this.globalAlpha=1;this.font='10px sans-serif';this.textAlign='start';this.textBaseline='alphabetic';this._dash=[];this._path=[];this._stack=[];this._transform='';this._measure=document.createElement('canvas').getContext('2d');}
+  setTransform(){} clearRect(){} save(){this._stack.push({fillStyle:this.fillStyle,strokeStyle:this.strokeStyle,lineWidth:this.lineWidth,globalAlpha:this.globalAlpha,font:this.font,textAlign:this.textAlign,textBaseline:this.textBaseline,_dash:[...this._dash],_transform:this._transform});}restore(){const state=this._stack.pop();if(state)Object.assign(this,state)}
+  translate(x,y){this._transform+=` translate(${x} ${y})`;} rotate(a){this._transform+=` rotate(${a*180/Math.PI})`;}
+  beginPath(){this._path=[];}moveTo(x,y){this._path.push(`M ${x} ${y}`)}lineTo(x,y){this._path.push(`L ${x} ${y}`)}closePath(){this._path.push('Z')}rect(x,y,w,h){this._path.push(`M ${x} ${y} h ${w} v ${h} h ${-w} Z`)}roundRect(x,y,w,h,r){r=Array.isArray(r)?r[0]:r;this._path.push(`M ${x+r} ${y} H ${x+w-r} Q ${x+w} ${y} ${x+w} ${y+r} V ${y+h-r} Q ${x+w} ${y+h} ${x+w-r} ${y+h} H ${x+r} Q ${x} ${y+h} ${x} ${y+h-r} V ${y+r} Q ${x} ${y} ${x+r} ${y} Z`)}
+  arc(cx,cy,r,a0,a1){if(Math.abs((a1-a0)-Math.PI*2)<.01){this._path.push(`M ${cx+r} ${cy} A ${r} ${r} 0 1 0 ${cx-r} ${cy} A ${r} ${r} 0 1 0 ${cx+r} ${cy}`)}else{const x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),large=Math.abs(a1-a0)>Math.PI?1:0;this._path.push(`M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`)}}
+  _esc(x){return String(x).replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]||m))} _style(kind){const color=kind==='fill'?this.fillStyle:this.strokeStyle;const dash=this._dash.length?` stroke-dasharray="${this._dash.join(' ')}"`:'';return`${kind}="${this._esc(color)}" opacity="${this.globalAlpha}"${kind==='stroke'?` stroke-width="${this.lineWidth}"${dash}`:''}`}
+  fill(){if(this._path.length)this.parts.push(`<path d="${this._path.join(' ')}" ${this._style('fill')} stroke="none"${this._transform?` transform="${this._transform.trim()}"`:''}/>`)}stroke(){if(this._path.length)this.parts.push(`<path d="${this._path.join(' ')}" fill="none" ${this._style('stroke')}${this._transform?` transform="${this._transform.trim()}"`:''}/>`)}
+  fillRect(x,y,w,h){this.parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" ${this._style('fill')}/>`)}setLineDash(x){this._dash=[...(x||[])]}
+  measureText(t){this._measure.font=this.font;return this._measure.measureText(String(t))}
+  fillText(text,x,y){const anchor=this.textAlign==='center'?'middle':this.textAlign==='right'||this.textAlign==='end'?'end':'start';const base=this.textBaseline==='middle'?'central':this.textBaseline==='top'?'hanging':this.textBaseline==='bottom'?'text-after-edge':'alphabetic';this.parts.push(`<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="${base}" style="font:${this._esc(this.font)}" ${this._style('fill')}${this._transform?` transform="${this._transform.trim()}"`:''}>${this._esc(text)}</text>`)}
+  toSvg(){return`<svg xmlns="http://www.w3.org/2000/svg" width="${this.w}" height="${this.h}" viewBox="0 0 ${this.w} ${this.h}">${this.parts.join('')}</svg>`}
+}
+function buildSvgString(){const src=$('teacherCanvas').getBoundingClientRect(),w=Math.max(640,Math.round(src.width)),h=Math.max(420,Math.round(src.height)),ctx=new SvgContext(w,h),fake={style:{},dataset:{},width:w,height:h,getBoundingClientRect:()=>({width:w,height:h}),getContext:()=>ctx,addEventListener:()=>{}};drawChart(fake,filteredData(),$('highlightId').value.trim(),exportChartOpts($('exportBackground').value,1));return ctx.toSvg();}
+function exportSvg(){try{const svg=buildSvgString();downloadBlob(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),`F1F2_${currentSession||'classroom'}.svg`);setStatus('teacherStatus','SVGを保存しました。','success');}catch(err){console.error(err);setStatus('teacherStatus','SVGを作成できませんでした。','error');}}
+
+function filteredData(){let d=(snapshot.data||[]).filter(x=>settings.selectedVowels.includes(x.vowelKey));if(role==='teacher'){const sf=$('sexFilter').value;if(sf!=='all')d=d.filter(x=>x.sex===sf);}return d;}
+function renderAll(){updateEllipseHelp();if(role==='teacher')renderTeacher();else renderStudent();}
+function ellipseLabel(){return settings.ellipseMode==='both'?'95%分布楕円＋95%信頼楕円':settings.ellipseMode==='confidence'?'95%信頼楕円':settings.ellipseMode==='distribution'?'95%分布楕円':'楕円なし'}
+function updateEllipseHelp(){const h=$('ellipseHelp');if(h)h.textContent=settings.ellipseMode==='both'?'個々のデータの広がりと、平均値の推定範囲を同時表示（n≥5）':settings.ellipseMode==='confidence'?'平均F1・F2の95%信頼領域（n≥5）':settings.ellipseMode==='distribution'?'個々のF1・F2の広がり（n≥5）':'楕円を表示しません';const n=$('teacherPlotNote');if(n)n.textContent=`薄い記号＝個々のデータ　濃い大きな記号＝平均　点や平均にカーソルを合わせると値を表示　輪郭記号＝参照データ　${ellipseLabel()}`;}
+function renderTeacher(){
+  const fd=filteredData();$('participantCount').textContent=snapshot.participantCount||0;$('dataPointCount').textContent=snapshot.dataPointCount||0;$('visibleDataCount').textContent=fd.length;$('topStat').textContent=currentSession?(snapshot.sessionName||''):'';
+  drawChart($('teacherCanvas'),fd,$('highlightId').value.trim(),{showPoints:settings.showPoints,showMean:settings.showMean,ellipseMode:settings.ellipseMode,showReference:$('showReference').checked,showLegend:settings.showLegend,showGrid:settings.showGrid,legendPosition:settings.legendPosition,plotTitle:settings.plotTitle});buildSummary();
+}
+function renderStudent(){
+  if(!$('studentInputs').children.length)buildStudentInputs();
+  const official=filteredData();let d=official.slice();const id=$('studentId')?.value.trim()||'';const draft=getDraftRecords();if(id&&draft.length){const draftKeys=new Set(draft.map(r=>r.vowelKey));d=d.filter(x=>!(x.participantId===id&&draftKeys.has(x.vowelKey)));draft.forEach(r=>d.push({...r,participantId:id,sex:$('studentSex').value,_draft:true}));}
+  drawChart($('studentCanvas'),d,id,{showPoints:true,showMean:true,ellipseMode:settings.ellipseMode,showReference:false,aggregateData:official});buildLegend('studentLegend');$('topStat').textContent=snapshot.sessionName||'';
+}
+function getColor(key){const v=VOWELS[key]||{language:key.startsWith('ja:')?'ja':'en'};return settings.colorMode==='language'?(settings.languageColors[v.language]||'#64748b'):(settings.vowelColors[key]||DEFAULT_COLORS[key]||'#64748b')}
+
+function hidePointTooltip(){const t=$('pointTooltip');if(t)t.classList.add('hidden');}
+function showPointTooltip(evt,hit){
+  const t=$('pointTooltip');if(!t||!hit)return;
+  const v=VOWELS[hit.row.vowelKey];
+  if(hit.kind==='mean'){
+    t.innerHTML=`<b>${esc(v?.label||hit.row.vowelKey||'')} の平均</b><br>平均F1: ${Math.round(Number(hit.row.f1))} Hz<br>平均F2: ${Math.round(Number(hit.row.f2))} Hz<br>n = ${hit.row.n}`;
+  }else{
+    t.innerHTML=`<b>${esc(v?.label||hit.row.vowel||hit.row.vowelKey||'')}</b><br>F1: ${esc(hit.row.f1)} Hz<br>F2: ${esc(hit.row.f2)} Hz`;
+  }
+  t.classList.remove('hidden');
+  const pad=12, tw=t.offsetWidth||120, th=t.offsetHeight||58;
+  let x=evt.clientX+14,y=evt.clientY+14;
+  if(x+tw+pad>window.innerWidth)x=evt.clientX-tw-14;
+  if(y+th+pad>window.innerHeight)y=evt.clientY-th-14;
+  t.style.left=Math.max(pad,x)+'px';t.style.top=Math.max(pad,y)+'px';
+}
+function bindPointHover(canvas){
+  if(!canvas||canvas.dataset.pointHoverBound==='1')return;
+  canvas.dataset.pointHoverBound='1';
+  canvas.addEventListener('pointermove',e=>{
+    const hits=pointHitMaps.get(canvas)||[];
+    const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    let best=null,bestD=Infinity;
+    for(const h of hits){const d=Math.hypot(h.x-x,h.y-y);const limit=h.kind==='mean'?12:9;if(d<=limit&&d<bestD){best=h;bestD=d}}
+    if(best)showPointTooltip(e,best);else hidePointTooltip();
+  });
+  canvas.addEventListener('pointerleave',hidePointTooltip);
+}
+
+function drawChart(canvas,data,highlightId,opts){
+  if(!canvas)return;const rect=canvas.getBoundingClientRect();if(rect.width<20||rect.height<20)return;const dpr=Number(opts.pixelRatio)||window.devicePixelRatio||1;canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);const W=rect.width,H=rect.height;c.clearRect(0,0,W,H);if((opts.background||'white')!=='transparent'){c.fillStyle='#fff';c.fillRect(0,0,W,H);}
+  const m={l:34,r:88,t:66,b:28};const L=m.l,R=W-m.r,T=m.t,B=H-m.b;const f1Min=settings.f1Min,f1Max=settings.f1Max,f2Min=settings.f2Min,f2Max=settings.f2Max;const X=f2=>L+(f2Max-f2)/(f2Max-f2Min)*(R-L);const Y=f1=>T+(f1-f1Min)/(f1Max-f1Min)*(B-T);
+  c.font=`${settings.tickFontSize||12}px ${settings.tickFont||'Yu Gothic, YuGothic, sans-serif'}`;c.strokeStyle=settings.gridColor||'#e2e8f0';c.lineWidth=Number(settings.gridLineWidth??1);c.fillStyle=settings.tickColor||'#526071';
+  const gridAlpha=Number(settings.gridAlpha??1),tickAlpha=Number(settings.tickAlpha??1),f2TickStep=Number(settings.f2TickStep)||500,f1TickStep=Number(settings.f1TickStep)||200;
+  niceTicks(f2Min,f2Max,f2TickStep).slice().reverse().forEach(v=>{const x=X(v);if(opts.showGrid!==false){c.globalAlpha=gridAlpha;c.beginPath();c.moveTo(x,T);c.lineTo(x,B);c.stroke()}c.globalAlpha=tickAlpha;c.textAlign='center';c.textBaseline='bottom';c.fillText(String(v),x,T-8)});
+  niceTicks(f1Min,f1Max,f1TickStep).forEach(v=>{const y=Y(v);if(opts.showGrid!==false){c.globalAlpha=gridAlpha;c.beginPath();c.moveTo(L,y);c.lineTo(R,y);c.stroke()}c.globalAlpha=tickAlpha;c.textAlign='left';c.textBaseline='middle';c.fillText(String(v),R+11,y)});
+  c.globalAlpha=1;c.strokeStyle='#667085';c.lineWidth=1.4;c.beginPath();c.moveTo(L,T);c.lineTo(R,T);c.stroke();c.beginPath();c.moveTo(R,T);c.lineTo(R,B);c.stroke();
+  c.fillStyle='#172033';c.font=`700 ${settings.unitFontSize||13}px ${settings.unitFont||'Yu Gothic, YuGothic, sans-serif'}`;c.textAlign='center';c.textBaseline='middle';const f2lx=L+(R-L)*(settings.f2LabelX??.5),f2ly=T+(B-T)*(settings.f2LabelY??-.07);c.fillText('F2 (Hz)',f2lx,f2ly);let f2w=c.measureText('F2 (Hz)').width;teacherF2LabelHit={x:f2lx-f2w/2-8,y:f2ly-(settings.unitFontSize||13)/2-8,w:f2w+16,h:(settings.unitFontSize||13)+16,L,R,T,B};const f1lx=L+(R-L)*(settings.f1LabelX??1.06),f1ly=T+(B-T)*(settings.f1LabelY??.5);c.save();c.translate(f1lx,f1ly);c.rotate(Math.PI/2);c.fillText('F1 (Hz)',0,0);c.restore();f2w=c.measureText('F1 (Hz)').width;teacherF1LabelHit={x:f1lx-(settings.unitFontSize||13)/2-8,y:f1ly-f2w/2-8,w:(settings.unitFontSize||13)+16,h:f2w+16,L,R,T,B};
+  drawPlotTitle(c,L,R,T,B);
+  const points=data.filter(p=>Number.isFinite(Number(p.f1))&&Number.isFinite(Number(p.f2)));
+  const hoverHits=points.map(p=>({kind:'point',row:p,x:X(Number(p.f2)),y:Y(Number(p.f1))})).filter(h=>h.x>=L&&h.x<=R&&h.y>=T&&h.y<=B);
+  bindPointHover(canvas);
+  const aggregatePoints=(opts.aggregateData||points).filter(p=>Number.isFinite(Number(p.f1))&&Number.isFinite(Number(p.f2)));
+  const groups=groupByKey(aggregatePoints);
+  Object.entries(groups).forEach(([key,arr])=>{const mu=mean(arr);if(mu){const x=X(mu.f2),y=Y(mu.f1);if(x>=L&&x<=R&&y>=T&&y<=B)hoverHits.push({kind:'mean',row:{vowelKey:key,f1:mu.f1,f2:mu.f2,n:arr.length},x,y});}});
+  pointHitMaps.set(canvas,hoverHits);
+  if(opts.ellipseMode&&opts.ellipseMode!=='none')Object.entries(groups).forEach(([key,arr])=>{if(opts.ellipseMode==='both'){drawEllipse(c,arr,X,Y,getColor(key),'distribution');drawEllipse(c,arr,X,Y,getColor(key),'confidence');}else drawEllipse(c,arr,X,Y,getColor(key),opts.ellipseMode);});
+  drawPolygonComparison(c,aggregatePoints,highlightId,X,Y,L,R,T,B);
+  drawComparisonLines(c,groups,points,highlightId,X,Y,L,R,T,B,opts);
+  if(opts.showPoints)points.forEach(p=>{const x=X(Number(p.f2)),y=Y(Number(p.f1));if(x<L||x>R||y<T||y>B)return;const hi=highlightId&&p.participantId===highlightId;if(!hi)drawMarker(c,x,y,settings.languageShapes[p.language]||'circle',getColor(p.vowelKey),Number(settings.pointAlpha??.4),Number(settings.pointSize??3.5))});
+  drawPointValueLabels(c,points,groups,highlightId,X,Y,L,R,T,B);
+  if(opts.showMean)Object.entries(groups).forEach(([key,arr])=>{const mu=mean(arr);if(!mu)return;const x=X(mu.f2),y=Y(mu.f1),v=VOWELS[key]||{language:'ja',label:key};drawMeanMarker(c,x,y,settings.languageShapes[v.language]||'circle',getColor(key));drawPhonemeLabel(c,x,y,v.label,getColor(key))});
+  if(opts.showReference&&referenceData.length)referenceData.filter(p=>settings.selectedVowels.includes(p.vowelKey)).forEach(p=>{const x=X(p.f2),y=Y(p.f1);if(x<L||x>R||y<T||y>B)return;drawOutlineMarker(c,x,y,settings.languageShapes[p.language]||'circle',getColor(p.vowelKey),5)});
+  if(opts.showPoints&&highlightId)points.filter(p=>p.participantId===highlightId).forEach(p=>{const x=X(Number(p.f2)),y=Y(Number(p.f1));if(x<L||x>R||y<T||y>B)return;drawStar(c,x,y,8,getColor(p.vowelKey))});
+  if(opts.showLegend)drawCanvasLegend(c,L,R,T,B,opts.legendPosition||'bottom-left');
+}
+let teacherTitleHit=null,teacherF1LabelHit=null,teacherF2LabelHit=null,draggingPlotLabel=null;
+function drawPlotTitle(c,L,R,T,B){
+  const title=String(settings.plotTitle||'').trim();teacherTitleHit=null;if(!title)return;
+  const x=L+(R-L)*Math.max(-.12,Math.min(1.12,settings.titleX??.5));const y=T+(B-T)*Math.max(-.15,Math.min(1.15,settings.titleY??.06));
+  c.save();c.fillStyle='#172033';c.font=`700 ${settings.titleFontSize||18}px ${settings.titleFont||'Yu Gothic, YuGothic, sans-serif'}`;c.textAlign='center';c.textBaseline='middle';c.fillText(title,x,y);const w=c.measureText(title).width;teacherTitleHit={x:x-w/2-8,y:y-(settings.titleFontSize||18)/2-8,w:w+16,h:(settings.titleFontSize||18)+16,L,R,T,B};c.restore();
+}
+function drawCanvasLegend(c,L,R,T,B,pos){
+  const items=settings.selectedVowels.map(key=>({key,v:VOWELS[key]})).filter(x=>x.v);if(!items.length)return;
+  c.save();
+  const fs=Number(settings.phonemeFontSize)||15,ff=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';
+  c.font=`700 ${fs}px ${ff}`;
+  const badgeMode=(settings.phonemeBadgeStyle||'badge')==='badge';
+  const lineH=badgeMode?Math.max(34,fs+16):Math.max(19,fs+7),pad=8;
+  const maxBadge=badgeMode?Math.max(...items.map(x=>Math.max(30,c.measureText(x.v.label).width+14))):0;
+  const maxLabel=badgeMode?Math.max(...items.map(x=>c.measureText(x.v.language==='ja'?'日本語':'英語').width),40):Math.max(...items.map(x=>c.measureText((x.v.language==='ja'?'日 ':'英 ')+x.v.label).width),70);
+  const polyRows=settings.polygonCompareEnabled?2:0;const baseW=Math.min(190,badgeMode?maxBadge+maxLabel+46:maxLabel+40);const boxW=Math.max(baseW,polyRows?220:0),boxH=pad*2+items.length*lineH+22+polyRows*22;
+  let x=L+10,y=B-boxH-10;if(pos==='bottom-right'){x=R-boxW-10;y=B-boxH-10}else if(pos==='top-left'){x=L+10;y=T+10}else if(pos==='top-right'){x=R-boxW-10;y=T+10}
+  c.fillStyle='rgba(255,255,255,.92)';c.strokeStyle='#d0d5dd';c.lineWidth=1;c.beginPath();c.roundRect(x,y,boxW,boxH,9);c.fill();c.stroke();
+  items.forEach((it,i)=>{const yy=y+pad+lineH/2+i*lineH,color=getColor(it.key);
+    if(badgeMode){
+      const d=Math.max(30,c.measureText(it.v.label).width+14),cx=x+10+d/2;
+      c.beginPath();c.arc(cx,yy,d/2,0,Math.PI*2);c.fillStyle=color;c.globalAlpha=.95;c.fill();c.globalAlpha=1;c.lineWidth=1.2;c.strokeStyle='#fff';c.stroke();
+      c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(it.v.label,cx,yy+.5);
+      c.fillStyle='#344054';c.textAlign='left';c.font=`500 ${Math.max(11,fs-2)}px ${ff}`;c.fillText(it.v.language==='ja'?'日本語':'英語',x+18+d,yy);c.font=`700 ${fs}px ${ff}`;
+    }else{
+      drawMarker(c,x+14,yy,settings.languageShapes[it.v.language]||'circle',color,1,4);c.fillStyle='#344054';c.textAlign='left';c.textBaseline='middle';c.fillText((it.v.language==='ja'?'日 ':'英 ')+it.v.label,x+25,yy)
+    }
+  });
+  const sy=y+pad+items.length*lineH+11;drawStar(c,x+14,sy,6,'#475467');c.fillStyle='#344054';c.font=`500 ${Math.max(11,fs-2)}px ${ff}`;c.textAlign='left';c.textBaseline='middle';c.fillText('自分／指定ID',x+25,sy);
+  if(settings.polygonCompareEnabled){const rows=[[settings.polygonAStyle||DEFAULT_SETTINGS.polygonAStyle,polygonSourceLabel(settings.polygonSourceA)],[settings.polygonBStyle||DEFAULT_SETTINGS.polygonBStyle,polygonSourceLabel(settings.polygonSourceB)]];rows.forEach((r,i)=>{const yy=sy+22*(i+1),st=r[0];c.save();c.strokeStyle=st.color||'#2563eb';c.lineWidth=Math.max(1.5,Number(st.lineWidth)||2);c.setLineDash(lineDashForStyle(st.lineStyle||'solid'));c.beginPath();c.moveTo(x+7,yy);c.lineTo(x+29,yy);c.stroke();c.restore();c.fillStyle='#344054';c.font=`600 ${Math.max(10,fs-3)}px ${ff}`;c.textAlign='left';c.textBaseline='middle';c.fillText((i===0?'A：':'B：')+r[1],x+36,yy);});}
+  c.restore();
+}
+function enterFullscreen(){const el=$('teacherChartShell');if(el?.requestFullscreen)el.requestFullscreen().then(()=>renderAll()).catch(()=>setStatus('teacherStatus','全画面表示を開始できませんでした。','warning'));else setStatus('teacherStatus','このブラウザでは全画面表示を利用できません。','warning')}
+function exitFullscreen(){if(document.fullscreenElement)document.exitFullscreen().then(()=>renderAll())}
+function bindTitleDragging(){const cv=$('teacherCanvas');if(!cv)return;const hitAt=(x,y)=>{for(const [kind,h] of [['title',teacherTitleHit],['f1',teacherF1LabelHit],['f2',teacherF2LabelHit]]){if(h&&x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{kind,h};}return null;};cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,hit=hitAt(x,y);if(!hit)return;draggingPlotLabel=hit.kind;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(draggingPlotLabel){const h=draggingPlotLabel==='title'?teacherTitleHit:draggingPlotLabel==='f1'?teacherF1LabelHit:teacherF2LabelHit;if(!h)return;const nx=(x-h.L)/(h.R-h.L),ny=(y-h.T)/(h.B-h.T);if(draggingPlotLabel==='title'){settings.titleX=Math.max(-.12,Math.min(1.12,nx));settings.titleY=Math.max(-.15,Math.min(1.15,ny));}else if(draggingPlotLabel==='f1'){settings.f1LabelX=Math.max(-.12,Math.min(1.16,nx));settings.f1LabelY=Math.max(-.15,Math.min(1.15,ny));}else{settings.f2LabelX=Math.max(-.12,Math.min(1.12,nx));settings.f2LabelY=Math.max(-.15,Math.min(1.15,ny));}settingsDirty=true;renderAll();return;}cv.style.cursor=hitAt(x,y)?'grab':'default';});cv.addEventListener('pointerup',e=>{draggingPlotLabel=null;cv.style.cursor='default';try{cv.releasePointerCapture(e.pointerId)}catch(_){}});}
+function sexLabel(x){return x==='male'?'男性':x==='female'?'女性':'回答しない'}
+function formatTimestamp(x){if(!x)return '—';const d=new Date(x);if(Number.isNaN(d.getTime()))return String(x);return d.toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function inputStatusRows(){const selected=settings.selectedVowels||[];const by={};(snapshot.data||[]).forEach(r=>{const id=String(r.participantId||'').trim();if(!id)return;const o=by[id]||(by[id]={id,sex:r.sex||'noanswer',records:{},last:''});o.sex=r.sex||o.sex;if(selected.includes(r.vowelKey))o.records[r.vowelKey]=r;if(r.timestamp&&(!o.last||new Date(r.timestamp)>new Date(o.last)))o.last=r.timestamp;});return Object.values(by).map(o=>{const done=selected.filter(k=>o.records[k]).length,missing=selected.filter(k=>!o.records[k]).map(k=>VOWELS[k]?.label||k);return{...o,done,total:selected.length,missing,points:Object.keys(o.records).length,complete:selected.length>0&&done===selected.length}}).sort((a,b)=>Number(a.complete)-Number(b.complete)||a.id.localeCompare(b.id,'ja'))}
+function closeInputStatus(){const d=$('inputStatusDialog');if(!d)return;d.classList.add('hidden');d.style.display='none';document.body.style.overflow=''}
+function openInputStatus(){const d=$('inputStatusDialog');if(!d)return;d.classList.remove('hidden');d.style.display='flex';d.style.zIndex='2147483600';document.body.style.overflow='hidden';try{buildInputStatusTable()}catch(err){const body=$('inputStatusBody');if(body)body.innerHTML='<tr><td colspan="7" class="warning">入力状況を表示できませんでした。画面を再読み込みして、もう一度「詳細を見る」を押してください。</td></tr>';const sm=$('statusDialogSummary');if(sm)sm.textContent='表示エラー';console.error(err)}}
+function buildInputStatusTable(){const body=$('inputStatusBody'),rows=inputStatusRows();body.innerHTML='';$('statusDialogSummary').textContent=`${rows.filter(x=>x.complete).length}/${rows.length}人 完了 ・ 対象 ${settings.selectedVowels.length}母音`;rows.forEach((r,idx)=>{const tr=document.createElement('tr');tr.innerHTML=`<td><b>${esc(r.id)}</b></td><td>${sexLabel(r.sex)}</td><td><span class="completion ${r.complete?'done':'pending'}">${r.complete?'完了':'未完了'} ${r.done}/${r.total}</span></td><td>${r.missing.length?esc(r.missing.join(' ')):'—'}</td><td>${r.points}</td><td>${esc(formatTimestamp(r.last))}</td><td><button class="small status-detail-btn" type="button" data-detail="${idx}">値を見る</button></td>`;body.appendChild(tr);const dr=document.createElement('tr');dr.className='detail-row hidden';dr.dataset.detailRow=String(idx);const vals=settings.selectedVowels.map(k=>{const v=VOWELS[k],x=r.records[k];return `<tr><td>${esc(v?.label||k)}</td><td>${x?esc(x.f1):'—'}</td><td>${x?esc(x.f2):'—'}</td></tr>`}).join('');dr.innerHTML=`<td colspan="7"><div class="detail-values"><table><thead><tr><th>母音</th><th>F1 (Hz)</th><th>F2 (Hz)</th></tr></thead><tbody>${vals}</tbody></table></div></td>`;body.appendChild(dr);tr.querySelector('[data-detail]').addEventListener('click',()=>{dr.classList.toggle('hidden');tr.querySelector('[data-detail]').textContent=dr.classList.contains('hidden')?'値を見る':'閉じる';});});if(!rows.length){const tr=document.createElement('tr');tr.innerHTML=`<td colspan="7" class="muted">${settings.selectedVowels?.length?'まだ入力データがありません':'対象が選択されていません。右側の「母音・スタイル」で対象を1つ以上選択してください。'}</td>`;body.appendChild(tr)}}
+function niceTicks(min,max,step){const a=Math.ceil(min/step)*step,b=Math.floor(max/step)*step,out=[];for(let v=a;v<=b;v+=step)out.push(v);if(!out.includes(min))out.unshift(min);if(!out.includes(max))out.push(max);return [...new Set(out)].sort((a,b)=>a-b)}
+function drawMarker(c,x,y,shape,color,alpha=1,r=4){c.save();c.globalAlpha=alpha;c.fillStyle=color;c.strokeStyle=color;c.beginPath();if(shape==='square'){c.rect(x-r,y-r,r*2,r*2)}else if(shape==='diamond'){c.moveTo(x,y-r-1);c.lineTo(x+r+1,y);c.lineTo(x,y+r+1);c.lineTo(x-r-1,y);c.closePath()}else if(shape==='triangle'){c.moveTo(x,y-r-2);c.lineTo(x+r+2,y+r);c.lineTo(x-r-2,y+r);c.closePath()}else{c.arc(x,y,r,0,Math.PI*2)}c.fill();c.restore()}
+function markerPath(c,x,y,shape,r){c.beginPath();if(shape==='square'){c.rect(x-r,y-r,r*2,r*2)}else if(shape==='diamond'){c.moveTo(x,y-r-1);c.lineTo(x+r+1,y);c.lineTo(x,y+r+1);c.lineTo(x-r-1,y);c.closePath()}else if(shape==='triangle'){c.moveTo(x,y-r-2);c.lineTo(x+r+2,y+r);c.lineTo(x-r-2,y+r);c.closePath()}else{c.arc(x,y,r,0,Math.PI*2)}}
+
+function drawPhonemeLabel(c,x,y,label,color){
+  const fontSize=Number(settings.phonemeFontSize)||15;
+  const fontFamily=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';
+  if((settings.phonemeBadgeStyle||'badge')==='text'){
+    c.save();c.fillStyle=color;c.font=`700 ${fontSize}px ${fontFamily}`;c.textAlign='left';c.textBaseline='alphabetic';c.fillText(label,x+9,y-8);c.restore();return;
+  }
+  c.save();
+  c.font=`700 ${fontSize}px ${fontFamily}`;
+  const tw=c.measureText(label).width;
+  const d=Math.max(30,Math.ceil(tw+14));
+  const cx=x+11+d/2,cy=y-10-d/2;
+  c.beginPath();c.arc(cx,cy,d/2,0,Math.PI*2);
+  c.fillStyle=color;c.globalAlpha=.95;c.fill();
+  c.globalAlpha=1;c.lineWidth=1.4;c.strokeStyle='#ffffff';c.stroke();
+  c.fillStyle='#ffffff';c.textAlign='center';c.textBaseline='middle';c.fillText(label,cx,cy+.5);
+  c.restore();
+}
+
+function drawMeanMarker(c,x,y,shape,color){c.save();markerPath(c,x,y,shape,Number(settings.meanSize)||6.5);c.fillStyle=(settings.meanMarkerFillMode||'linked')==='custom'?(settings.meanMarkerFillColor||'#334155'):color;c.fill();if(settings.meanMarkerOutline!==false){c.lineWidth=Number(settings.meanMarkerOutlineWidth)||1.5;c.strokeStyle=settings.meanMarkerOutlineColor||'#111827';c.stroke();}c.restore()}
+function drawOutlineMarker(c,x,y,shape,color,r=5){c.save();markerPath(c,x,y,shape,r);c.fillStyle='#fff';c.globalAlpha=.8;c.fill();c.globalAlpha=1;c.lineWidth=1.8;c.strokeStyle=color;c.stroke();c.restore()}
+function drawStar(c,cx,cy,r,color){c.save();c.fillStyle=color;c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2===0?r:r*.42,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;if(i===0)c.moveTo(x,y);else c.lineTo(x,y)}c.closePath();c.fill();c.stroke();c.restore()}
+function groupByKey(data){const g={};data.forEach(x=>(g[x.vowelKey]||(g[x.vowelKey]=[])).push(x));return g}
+function mean(arr){if(!arr.length)return null;return{f1:arr.reduce((a,x)=>a+Number(x.f1),0)/arr.length,f2:arr.reduce((a,x)=>a+Number(x.f2),0)/arr.length}}
+function ellipseScale95(mode,n){
+  if(mode==='distribution')return n>=5?Math.sqrt(5.991):null;
+  if(mode==='confidence'){
+    if(n<5)return null;
+    const nu=n-2;
+    const f95=(nu/2)*(Math.pow(0.05,-2/nu)-1);
+    return Math.sqrt((2*(n-1)/(n*nu))*f95);
+  }
+  return null;
+}
+function drawEllipse(c,arr,X,Y,color,mode){const k=ellipseScale95(mode,arr.length);if(!k)return;const m=mean(arr);let s11=0,s22=0,s12=0;arr.forEach(p=>{const a=Number(p.f2)-m.f2,b=Number(p.f1)-m.f1;s11+=a*a;s22+=b*b;s12+=a*b});const denom=arr.length-1;s11/=denom;s22/=denom;s12/=denom;const tr=s11+s22,det=s11*s22-s12*s12,disc=Math.sqrt(Math.max(0,tr*tr/4-det));const l1=tr/2+disc,l2=tr/2-disc;if(l1<=0||l2<=0)return;let vx=s12,vy=l1-s11;if(Math.abs(vx)+Math.abs(vy)<1e-9){vx=1;vy=0}const norm=Math.hypot(vx,vy);vx/=norm;vy/=norm;const ux=-vy,uy=vx;c.save();ensureEllipseStyles();const es=settings.ellipseStyles[mode]||{};const ellipseColor=es.colorMode==='custom'?(es.color||color):color;c.strokeStyle=ellipseColor;c.globalAlpha=.82;c.lineWidth=Number(es.lineWidth)||2;const ls=es.lineStyle||(mode==='confidence'?'dashed':'solid');c.setLineDash(ls==='dashed'?[7,5]:ls==='dotted'?[2,4]:[]);c.beginPath();for(let i=0;i<=100;i++){const t=i/100*Math.PI*2;const f2=m.f2+k*(Math.sqrt(l1)*Math.cos(t)*vx+Math.sqrt(l2)*Math.sin(t)*ux);const f1=m.f1+k*(Math.sqrt(l1)*Math.cos(t)*vy+Math.sqrt(l2)*Math.sin(t)*uy);const x=X(f2),y=Y(f1);if(i===0)c.moveTo(x,y);else c.lineTo(x,y)}c.closePath();const fillAlpha=mode==='distribution'?Number(es.fillAlpha||0):0;if(fillAlpha>0){c.save();c.globalAlpha=fillAlpha;c.fillStyle=ellipseColor;c.fill();c.restore();c.globalAlpha=.82}c.stroke();c.restore()}
+function buildLegend(id){const box=$(id);if(!box)return;box.innerHTML='';settings.selectedVowels.forEach(key=>{const v=VOWELS[key];if(!v)return;const item=document.createElement('span');item.className='legend-item';const color=getColor(key);const shape=settings.languageShapes[v.language]||'circle';item.style.fontFamily=settings.phonemeFont||'Yu Gothic, YuGothic, sans-serif';item.style.fontSize=(settings.phonemeFontSize||15)+'px';if((settings.phonemeBadgeStyle||'badge')==='badge'){const badge=document.createElement('span');badge.className='phoneme-legend-badge';badge.textContent=v.label;badge.style.background=color;item.appendChild(badge);const lang=document.createElement('span');lang.className='legend-lang';lang.textContent=v.language==='ja'?'日本語':'英語';item.appendChild(lang);}else{let sym=`<span class="legend-symbol ${shape==='circle'?'round':shape==='square'?'square':''}" style="background:${color};${shape==='diamond'?'transform:rotate(45deg)':''}"></span>`;if(shape==='triangle')sym=`<span class="shape-triangle" style="border-bottom-color:${color}"></span>`;item.innerHTML=`${sym}${v.language==='ja'?'<span class="badge-ja">日</span>':'<span class="badge-en">英</span>'}${esc(v.label)}`;}box.appendChild(item)});const star=document.createElement('span');star.className='legend-item';star.innerHTML='<span class="star-symbol">★</span>自分／指定ID';box.appendChild(star)}
+function buildSummary(){const body=$('summaryBody');if(!body)return;body.innerHTML='';const g=groupByKey(filteredData());settings.selectedVowels.forEach(key=>{const arr=g[key]||[];if(!arr.length)return;const m=mean(arr),v=VOWELS[key];const tr=document.createElement('tr');tr.innerHTML=`<td>${v.language==='ja'?'日本語':'英語'}</td><td>${esc(v.label)}</td><td>${arr.length}</td><td>${Math.round(m.f1)}</td><td>${Math.round(m.f2)}</td>`;body.appendChild(tr)});if(!body.children.length){const tr=document.createElement('tr');tr.innerHTML='<td colspan="5" class="muted">まだデータがありません</td>';body.appendChild(tr)}}
+
+function loadReferenceFile(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{referenceData=parseReferenceCsv(String(r.result||''));$('refStatus').textContent=`${referenceData.length}点を読み込みました`;$('showReference').checked=true;renderAll()}catch(err){$('refStatus').textContent='読み込みに失敗しました：'+err.message}};r.readAsText(f)}
+function parseReferenceCsv(text){const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)throw new Error('データがありません');const head=csvLine(lines[0]).map(x=>x.trim().toLowerCase());const idx=n=>head.indexOf(n);if(idx('vowel')<0||idx('f1')<0||idx('f2')<0)throw new Error('vowel, f1, f2 列が必要です');const out=[];for(let i=1;i<lines.length;i++){const a=csvLine(lines[i]);let lang=idx('language')>=0?String(a[idx('language')]||'en').trim():'en';lang=/^(ja|jp|japanese|日本語)$/i.test(lang)?'ja':'en';const label=String(a[idx('vowel')]||'').trim();const key=findVowelKey(lang,label);const f1=Number(a[idx('f1')]),f2=Number(a[idx('f2')]);if(key&&Number.isFinite(f1)&&Number.isFinite(f2)&&f1>=100&&f1<=2500&&f2>=200&&f2<=6000)out.push({participantId:'reference',sex:'unspecified',language:lang,vowelKey:key,vowel:VOWELS[key].label,f1,f2})}return out}
+function findVowelKey(lang,label){const clean=label.replace(/^\//,'').replace(/\/$/,'');return Object.keys(VOWELS).find(k=>VOWELS[k].language===lang&&VOWELS[k].label.replaceAll('/','')===clean)||null}
+function csvLine(line){const out=[];let cur='',q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(ch===','&&!q){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out}
+function exportRows(){return (snapshot.data||[]).map(x=>({session:safeSheetText(currentSession),timestamp:safeSheetText(x.timestamp||''),participantId:safeSheetText(x.participantId),sex:safeSheetText(x.sex),language:safeSheetText(x.language),vowelKey:safeSheetText(x.vowelKey||''),vowel:safeSheetText(x.vowel),example:safeSheetText(VOWELS[x.vowelKey]?.example||''),f1:x.f1,f2:x.f2}))}
+function safeSheetText(v){const s=String(v??'');return /^[=+\-@]/.test(s)?"'"+s:s}
+function exportCsv(){const rows=exportRows();const head=['session','timestamp','participantId','sex','language','vowelKey','vowel','example','f1','f2'];const lines=[head.join(','),...rows.map(r=>head.map(k=>csvEscape(r[k])).join(','))];downloadBlob(new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}),`F1F2_${currentSession||'classroom'}.csv`)}
+function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replaceAll('"','""')+'"':s}
+function exportXlsx(){if(!window.ExcelJS){setStatus('teacherStatus','Excel出力ライブラリを読み込めませんでした。CSVをご利用ください。','warning');return;}const rows=exportRows(),head=['session','timestamp','participantId','sex','language','vowelKey','vowel','example','f1','f2'];const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('F1-F2');ws.addRow(head);rows.forEach(r=>ws.addRow(head.map(k=>r[k]??'')));wb.xlsx.writeBuffer().then(buf=>downloadBlob(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),`F1F2_${currentSession||'classroom'}.xlsx`)).catch(()=>setStatus('teacherStatus','Excelファイルを作成できませんでした。CSVをご利用ください。','warning'))}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000)}
+</script>
+</body>
+</html>
