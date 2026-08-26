@@ -10,6 +10,6 @@ window.B1_FIREBASE_CONFIG = window.B1_FIREBASE_CONFIG || {
   projectId: "esakits-f1-f2-classroom",
   storageBucket: "esakits-f1-f2-classroom.firebasestorage.app",
   messagingSenderId: "4707652667",
-  appId: "1:4707652667:web:cdb5c9a7a573f314aef81e",
-  measurementId: "G-8KR5HHRKNS"
+  appId: "1:4707652667:web:254b400cfde3767eaef81e",
+  measurementId: "G-15MFGE6YW6"
 };
