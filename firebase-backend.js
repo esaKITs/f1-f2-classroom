@@ -7,7 +7,7 @@
   'use strict';
 
   const CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const VERSION='1.1.1';
+  const VERSION='1.2.0';
   let readyPromise=null;
 
   function cfg(){ return global.B1_FIREBASE_CONFIG || null; }

@@ -1,6 +1,6 @@
-# F1–F2 Classroom v1.1.1 テスト報告
+# F1–F2 Classroom v1.2.0 テスト報告
 
-実施日: 2026-08-26
+実施日: 2026-11-17
 
 ## 静的検査
 - PASS: JavaScript 構文チェック（Node.js）
@@ -44,3 +44,18 @@
 - PASS: ソース冒頭に esaKITs / Tetsuya Esaki の著作権・Apache License 2.0 帰属表記。
 - PASS: ブランド追加後もヘッダー主要操作（参加者数・同期状態・更新）がDOM上で維持。
 - PASS: v1.1.0 の多角形比較UI・SVG保存UIを維持。
+
+
+## 日本語／English 切替（v1.2.0）
+- PASS: 翻訳表342件すべてを i18n.js に収録していることを機械照合。
+- PASS: i18n.js の JavaScript 構文検査。
+- PASS: 日本語 → English → 日本語の往復切替。
+- PASS: 固定ラベル、placeholder、長文ヘルプの切替。
+- PASS: 動的メッセージ（例：送信件数）の英語化。
+- PASS: Canvas の UI 文言が English 選択時に英訳され、日本語へ戻ることを Chromium で確認。
+- PASS: ユーザー入力扱いのセッション名表示は自動翻訳対象から除外。
+- PASS: 公開ビルドが i18n.js を配置し、index.html に読み込みタグを挿入する設定を静的検査。
+- PASS: 公開ビルド内で node --check _site/i18n.js を実行する回帰検査を追加。
+
+## v1.2.0 テスト範囲
+翻訳レイヤーの Chromium 操作テストは、公開版と同じヘッダー構造・主要UI文字列を持つ独立テストページで実施しました。既存の F1/F2 計算、Firebase Realtime Database、セキュリティルールには機能変更を加えていません。公開後は gh-pages の生成物と表示を追加確認します。
