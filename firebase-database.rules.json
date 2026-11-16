@@ -1,0 +1,34 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "sessions": {
+      "$sid": {
+        ".write": "auth != null && ((!data.exists() && newData.child('private').child('ownerUid').val() === auth.uid && newData.child('private').child('recoveryKey').isString()) || data.child('private').child('ownerUid').val() === auth.uid || (newData.child('private').child('ownerUid').val() === auth.uid && data.child('claims').child(auth.uid).child('key').val() === data.child('private').child('recoveryKey').val()))",
+        "meta": { ".read": "auth != null" },
+        "settings": { ".read": "auth != null" },
+        "publicPoints": {
+          ".read": "auth != null",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('sessions').child($sid).child('meta').child('active').val() === true"
+          }
+        },
+        "privateRoster": {
+          ".read": "auth != null && root.child('sessions').child($sid).child('private').child('ownerUid').val() === auth.uid",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('sessions').child($sid).child('meta').child('active').val() === true"
+          }
+        },
+        "private": {
+          ".read": "auth != null && data.child('ownerUid').val() === auth.uid"
+        },
+        "claims": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && (!newData.exists() || newData.child('key').val() === root.child('sessions').child($sid).child('private').child('recoveryKey').val())"
+          }
+        }
+      }
+    }
+  }
+}
